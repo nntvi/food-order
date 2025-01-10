@@ -70,3 +70,25 @@ if (!configProject.success) {
 const envConfig = configProject.data;
 export default envConfig;
 ```
+
+### Flow quản lý authentication
+
+##### Đối với NextJS basic
+
+Cách login
+
+1.  Client component gọi api login đến Server Backend để nhận về token
+2.  Client lấy token này để gọi tiếp 1 API là `/auth` để đến Next.js Server để Next.js Server lưu token vào cookie client
+
+=> Nếu muốn thao tác với cookie ở domain front-end (thêm, xoá, sửa) thì phải thông qua `Route Handler Nextjs Server`
+
+Đối với project, thay vì khai báo router handler là `/auth`, chuyển sang khai báo router handler cho login luôn
+
+1. Client component gọi api login route handler là `auth/login`
+2. Router handler này sẽ gọi tiếp api login đến Server Backend để nhận về token, sau đó lưu token vào cookie client, cuối cùng trả kết quả cho component
+
+=> Gọi là dùng Next.js Server làm proxy trung gian.
+Logout cũng tương tự.
+
+- Ở server component biết được login hay chưa dựa vào cookie bà browser gửi lên
+- Ở client component biết được login hay chưa dựa vào local storage
