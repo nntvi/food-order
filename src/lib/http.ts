@@ -3,7 +3,7 @@ import { LoginResType } from "@/schemaValidations/auth.schema";
 import { redirect } from "next/navigation";
 
 type CustomOptions = Omit<RequestInit, "method"> & {
-  baseUr?: string | undefined;
+  baseUrl?: string | undefined;
 };
 
 const ENTITY_ERROR_STATUS = 422;
@@ -83,7 +83,7 @@ const request = async <Response>(
       baseHeaders.Authorization = `Bearer ${accessToken}`;
     }
   }
-  const baseUrl = options?.baseUr || process.env.NEXT_PUBLIC_API_URL;
+  const baseUrl = options?.baseUrl || process.env.NEXT_PUBLIC_API_URL;
   const fullUrl = `${baseUrl}/${normalizePath(url)}`; // Normalize path to remove leading slash
   const response = await fetch(fullUrl, {
     ...options,
