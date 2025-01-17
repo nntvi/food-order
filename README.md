@@ -92,3 +92,35 @@ Logout cũng tương tự.
 
 - Ở server component biết được login hay chưa dựa vào cookie bà browser gửi lên
 - Ở client component biết được login hay chưa dựa vào local storage
+
+---
+
+#### Mô tả sơ lược vị trí folder và các config ban đầu
+
+- Để vào page login -> tất nhiên phải đi qua root layout. Vì UI có xài dark mode -> ThemeProvider đại diện cho nó
+  ```bash
+  <html lang="en" suppressHydrationWarning>
+     <body
+       className={cn(
+         "min-h-screen bg-background font-sans antialiased",
+         fontSans.variable
+       )}
+     >
+       <ThemeProvider
+         attribute="class"
+         defaultTheme="system"
+         enableSystem
+         disableTransitionOnChange
+       >
+         {children}
+         <Toaster />
+       </ThemeProvider>
+     </body>
+   </html>
+  ```
+- Tiếp theo sẽ đi vào `layout.tsx` của folder `public`. Nhìn vào src ta thấy folder public được đặt là `(public)` nghĩa là `sẽ không tính nó là 1 route`
+  => Tại layout này sẽ chứa `<NavItem>` -> Menu. Và children tuỳ route xây dựng
+
+- Đi vào `LoginForm` thực hiện submit. Nhưng để caching data phải sử dụng `Tanstack Query` => install
+- Khi cài cái này có recommended install thêm eslint tanstack query => khai báo để sử dụng cho tổng src => Ở folder `component` tạo `app-provider.tsx` => bọc lại ở layout tổng
+- Submit form login -> đi vào `api/route/login` -> tại đây sẽ gọi đến server backend login -> nhận đc access và refresh token -> set vào `cookies` đồng thời lưu vào local storage đã set ở config http
