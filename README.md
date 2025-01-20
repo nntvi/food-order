@@ -124,3 +124,40 @@ Logout cũng tương tự.
 - Đi vào `LoginForm` thực hiện submit. Nhưng để caching data phải sử dụng `Tanstack Query` => install
 - Khi cài cái này có recommended install thêm eslint tanstack query => khai báo để sử dụng cho tổng src => Ở folder `component` tạo `app-provider.tsx` => bọc lại ở layout tổng
 - Submit form login -> đi vào `api/route/login` -> tại đây sẽ gọi đến server backend login -> nhận đc access và refresh token -> set vào `cookies` đồng thời lưu vào local storage đã set ở config http
+
+#### Phân tích ưu nhược của 2 cơ chế quản lý đăng nhập ở server và client
+
+1. Static rendering: được rerender trước khi chúng ta build
+2. Dynamic rendering: nào có request thì bắt đầu mới render (ko có build HTML sẵn) -> mỗi cái request nó sẽ lại tạo ra 1 cái
+   Có 3 cái nếu sử dụng thì sẽ thành `Dynamic` - cookies() - headers() - searchParams()
+   Chỉ cần trong page có khai báo như này, ví dụ:
+   `bash
+   const cookieStore = cookies()
+   const accessToken = cookiesStore.get('accessToken')
+ `
+   => Để người dùng vào nhanh hơn thì mình phải chuyển thành static rendering. Nhưng nếu không có cookies làm sao xác định được người dùng đã đăng nhập trên server???
+   Thật sự là không có cách nào cả. Chúng ta chỉ có thể check ở client thôi.
+
+##### Mục tiêu là sẽ chỉnh lại menu, sao cho khi đăng nhập rồi, sẽ ko hiện nút login nữa
+
+- ###### nav-item.tsx
+  - check isLogin thông qua get accessToken ở localStorage
+  - Thì localStorage nó chỉ có giá trị khi chạy trong môi trường `Browser` thôi. Còn ở đây, ở `NavItems` thì đang sử dụng `use client` -> nó sẽ chạy ở 2 môi trường: 1 là khi chúng ta build, 2 là chạy ở browser => thì ngay lúc build này đã ko nhận dạng được localStorage ở NavItem => và đã bị lỗi rồi `localStorage is not defined`
+    => check nếu nó ko phải browser (`typeof window !== 'undefined'`) thì trả về null
+  - Tiếp theo 1 vấn đề khác, rất thường hay gặp ở NextJs. Ở server page này là static rendering - trạng thái chưa đăng nhập (vì ở server chưa check cookie gì) => `nav-item` này ko biết đăng nhập hay chưa => lại trả về button Đăng nhập tiếp
+    => Để fix case này thì ..
+    NÊN CHECK TRONG UseEffect - để sau khi mount, nó lại check lại lần nữa, và render ra đúng menu
+    ```bash
+      const [isAuth, setIsAuth] = useState(false)
+      useEffect(() => {
+        setIsAuth(Boolean(getAccessTokenFromLocalStorage()))
+      }, [])
+      return menuItems.map((item) => {
+        if ((item.authRequired === false && isAuth) || (item.authRequired === true && !isAuth)) return null
+        return (
+          <Link href={item.href} key={item.href} className={className}>
+            {item.title}
+          </Link>
+        )
+      })
+    ```
