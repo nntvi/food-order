@@ -131,10 +131,10 @@ Logout cũng tương tự.
 2. Dynamic rendering: nào có request thì bắt đầu mới render (ko có build HTML sẵn) -> mỗi cái request nó sẽ lại tạo ra 1 cái
    Có 3 cái nếu sử dụng thì sẽ thành `Dynamic` - cookies() - headers() - searchParams()
    Chỉ cần trong page có khai báo như này, ví dụ:
-   `bash
-   const cookieStore = cookies()
-   const accessToken = cookiesStore.get('accessToken')
- `
+   ```bash
+    const cookieStore = cookies()
+    const accessToken = cookiesStore.get('accessToken')
+   ```
    => Để người dùng vào nhanh hơn thì mình phải chuyển thành static rendering. Nhưng nếu không có cookies làm sao xác định được người dùng đã đăng nhập trên server???
    Thật sự là không có cách nào cả. Chúng ta chỉ có thể check ở client thôi.
 
@@ -161,3 +161,30 @@ Logout cũng tương tự.
         )
       })
     ```
+
+#### Middleware điều hướng request người dùng
+
+Quản lý việc nếu người dùng chưa/hoặc đã đăng nhập rồi thì sẽ được phép hoặc không được phép vào page nào.
+Tạo `middleware.ts` trong folder `src` nhé!!!!
+
+```bash
+const privatePaths = ['/manage']
+const unAuthPaths = ['/login']
+export function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl
+  const isAuth = Boolean(req.cookies.get('accessToken')?.value)
+  // vd:  pathname: /manage/dashboard
+  if (privatePaths.some((path) => pathname.startsWith(path)) && !isAuth) {
+    // nếu muốn vào private path mà chưa login thì redirect về login
+    return NextResponse.redirect(new URL('/login', req.nextUrl).toString())
+  } else if (unAuthPaths.some((path) => pathname.startsWith(path)) && isAuth) {
+    // nếu đã login rồi thì không cho vào login nữa
+    return NextResponse.redirect(new URL('/', req.nextUrl).toString())
+  }
+  return NextResponse.next()
+}
+export const config = {
+  matcher: ['/manage/:path*', '/login']
+}
+
+```
