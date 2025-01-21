@@ -1,5 +1,5 @@
 import http from '@/lib/http'
-import { LoginBodyType, LoginResType } from '@/schemaValidations/auth.schema'
+import { LoginBodyType, LoginResType, LogoutBodyType } from '@/schemaValidations/auth.schema'
 
 const authApiRequest = {
   // server login
@@ -8,6 +8,18 @@ const authApiRequest = {
   login: (body: LoginBodyType) =>
     http.post<LoginResType>('/api/auth/login', body, {
       baseUrl: ''
-    })
+    }),
+  sLogout: (
+    body: LogoutBodyType & {
+      accessToken: string
+    }
+  ) =>
+    http.post(
+      '/auth/logout',
+      { refreshToken: body.refreshToken },
+      { headers: { Authorization: `Bearer ${body.accessToken}` } }
+    ),
+  // logout client ko cần body vì access/refresh token đã được gửi thông qua cookie r
+  logout: () => http.post('/api/auth/logout', null, { baseUrl: '' })
 }
 export default authApiRequest
