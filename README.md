@@ -188,3 +188,103 @@ export const config = {
 }
 
 ```
+
+#### Logic login - logout
+
+Sau khi làm xong middleware thì login đoạn login/logout không có gì xa lạ.
+
+- Chuẩn bị một useLoginMutation gọi tới authApiRequestLogin
+
+```bash
+  // server login
+  sLogin: (body: LoginBodyType) => http.post<LoginResType>('/auth/login', body),
+  // client login => gọi đến route handler
+  login: (body: LoginBodyType) =>
+    http.post<LoginResType>('/api/auth/login', body, {
+      baseUrl: ''
+    }),
+```
+
+=> Vậy ở `api/auth/login` xử lý những việc gì???
+
+```bash
+export async function POST(request: Request) {
+  const body = (await request.json()) as LoginBodyType
+  const cookieStore = cookies()
+  // bắt đầu gọi server backend để set cookie nhé!!!
+  try {
+    const { payload } = await authApiRequest.sLogin(body)
+    const {
+      data: { accessToken, refreshToken }
+    } = payload
+    // mục đích của việc decode là lấy ra được thời điểm hết hạn của token
+    // sau đó dùng nó để set thời hạn cho cookie
+    const decodeAccessToken = jwt.decode(accessToken) as { exp: number }
+    const decodeRefreshToken = jwt.decode(refreshToken) as { exp: number }
+
+    ;(await cookieStore).set('accessToken', accessToken, {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: true,
+      expires: decodeAccessToken.exp * 1000
+    })
+    ;(await cookieStore).set('refreshToken', refreshToken, {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: true,
+      expires: decodeRefreshToken.exp * 1000
+    })
+
+    // có nghĩa là api từ server back end trả về cho mình cái gì
+    // thì từ cái route handler mình cũng trả về cái đó
+    return Response.json(payload)
+  } catch (error) {
+    if (error instanceof HttpError) {
+      return Response.json(error.payload, {
+        status: error.status
+      })
+    } else {
+      return Response.json(
+        {
+          message: 'Internal Server Error'
+        },
+        {
+          status: 500
+        }
+      )
+    }
+  }
+}
+```
+
+=> Việc lưu token đã được thực hiện ở 2 nơi:
+
+- localStorage: đã config ở http
+- cookies: set trong đoạn code ở trên
+
+##### Tương tự như thế vs logic logout
+
+Nhưng khi logout, ta không quan tâm token này còn hạn hay không. Chỉ cần user nhấn logout thì lập tức mọi thứ được xoá, và quay về page mặc định nào đó.
+
+---
+
+#### Cập nhật ảnh trang profile
+
+Thực hiện chức năng up ảnh như bình thường. Nhưng có một lỗi trong quá trình chúng ta xử lý
+Hãy để ý route `manage/setting` - layout gồm 2 component `DropdownAvatar` và `UpdateProfileForm`.
+Hai component này cùng gọi đến `useAccountProfile` để lấy thông tin user
+=> khi dropdown có thông tin, thì bên form update bị caching data, ko lấy thêm nữa => không set vào form được. Cách giải quyết????
+
+Sử dụng useEffect thoi
+
+```bash
+  const { data } = useAccountProfile()
+  useEffect(() => {
+    if (data) {
+      const { name, avatar } = data.payload.data
+      form.reset({ name, avatar: avatar || '' })
+    }
+  }, [form, data])
+```
