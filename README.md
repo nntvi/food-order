@@ -274,17 +274,49 @@ Nhưng khi logout, ta không quan tâm token này còn hạn hay không. Chỉ c
 
 Thực hiện chức năng up ảnh như bình thường. Nhưng có một lỗi trong quá trình chúng ta xử lý
 Hãy để ý route `manage/setting` - layout gồm 2 component `DropdownAvatar` và `UpdateProfileForm`.
-Hai component này cùng gọi đến `useAccountProfile` để lấy thông tin user
+Hai component này cùng gọi đến `useAccountMe` để lấy thông tin user
 => khi dropdown có thông tin, thì bên form update bị caching data, ko lấy thêm nữa => không set vào form được. Cách giải quyết????
 
 Sử dụng useEffect thoi
 
 ```bash
-  const { data } = useAccountProfile()
+  const { data } = useAccountMe()
   useEffect(() => {
     if (data) {
       const { name, avatar } = data.payload.data
       form.reset({ name, avatar: avatar || '' })
     }
   }, [form, data])
+```
+
+---
+
+#### Cập nhật thông tin profile
+
+Thông tin cập nhật gồm avatar và name
+Có một lỗi ở chỗ xử lý ảnh cần lưu ý. Với những trường hợp acc đầu tiên tạo ra là null, thì chắc chắn validate ban đầu sẽ bắt và ko submit được đoạn này. Vì vậy hãy fake cho nó pass qua - xử lý chỗ onChange
+
+```bash
+  export const UpdateMeBody = z
+    .object({
+      name: z.string().trim().min(2).max(256),
+      avatar: z.string().url().optional()
+    })
+    .strict()
+```
+
+```bash
+  <input
+      type='file'
+      accept='image/*'
+      className='hidden'
+      ref={avatarInputRef}
+      onChange={(e) => {
+        const file = e.target.files?.[0]
+        if (file) {
+          setFile(file)
+            field.onChange('http://localhost:3000/' + field.name)
+          }
+      }}
+  />
 ```

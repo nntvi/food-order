@@ -1,21 +1,24 @@
 'use client'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Upload } from 'lucide-react'
-import { useForm } from 'react-hook-form'
+import { toast } from '@/hooks/use-toast'
+import { useAccountMe, useUpdateMe } from '@/queries/useAcccount'
+import { uploadMediaMutation } from '@/queries/useMedia'
 import { UpdateMeBody, UpdateMeBodyType } from '@/schemaValidations/account.schema'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { use, useEffect, useRef, useState } from 'react'
-import { useAccountProfile } from '@/queries/useAcccount'
+import { Upload } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { useForm } from 'react-hook-form'
 
 export default function UpdateProfileForm() {
   const avatarInputRef = useRef<HTMLInputElement>(null)
   const [file, setFile] = useState<File | null>(null)
-
+  const updateMeMutation = useUpdateMe()
+  const useUploadMedia = uploadMediaMutation()
   const form = useForm<UpdateMeBodyType>({
     resolver: zodResolver(UpdateMeBody),
     defaultValues: {
@@ -23,19 +26,51 @@ export default function UpdateProfileForm() {
       avatar: ''
     }
   })
+  console.log(form.formState.errors)
+
   const avatar = form.watch('avatar')
   const name = form.watch('name')
   const previewAvatar = file ? URL.createObjectURL(file) : avatar
-  const { data } = useAccountProfile()
+  const { data, refetch } = useAccountMe()
   useEffect(() => {
     if (data) {
       const { name, avatar } = data.payload.data
       form.reset({ name, avatar: avatar || '' })
     }
   }, [form, data])
+
+  const onSubmit = async (values: UpdateMeBodyType) => {
+    if (updateMeMutation.isPending) return
+    try {
+      if (file) {
+        const formData = new FormData()
+        formData.append('file', file)
+        const { payload } = await useUploadMedia.mutateAsync(formData)
+        values.avatar = payload.data
+      }
+      const result = await updateMeMutation.mutateAsync(values)
+      toast({
+        description: result.payload.message
+      })
+      refetch()
+    } catch (error) {
+      console.log('🚀 ~ onSubmit ~ error:', error)
+    }
+  }
+  const reset = () => {
+    form.reset({
+      name: '',
+      avatar: ''
+    })
+  }
   return (
     <Form {...form}>
-      <form noValidate className='grid auto-rows-max items-start gap-4 md:gap-8'>
+      <form
+        noValidate
+        className='grid auto-rows-max items-start gap-4 md:gap-8'
+        onReset={reset}
+        onSubmit={form.handleSubmit(onSubmit)}
+      >
         <Card x-chunk='dashboard-07-chunk-0'>
           <CardHeader>
             <CardTitle>Thông tin cá nhân</CardTitle>
@@ -61,6 +96,7 @@ export default function UpdateProfileForm() {
                           const file = e.target.files?.[0]
                           if (file) {
                             setFile(file)
+                            field.onChange('http://localhost:3000/' + field.name)
                           }
                         }}
                       />
