@@ -320,3 +320,13 @@ Có một lỗi ở chỗ xử lý ảnh cần lưu ý. Với những trường 
       }}
   />
 ```
+
+---
+
+#### Cập nhật password
+
+Việc cập nhật password có thể làm thông thường như cái gửi body password cần đổi lên cho server. Nhưng một vấn đề đặt ra là
+
+##### Nếu 2 người cùng xài 1 acc thì khi người này đổi password, server phải xoá access cũng như refresh hiện tại và tạo token mới lưu vào db
+
+=> phải nhớ set lại token cho cookie cũng như local storage để tính năng trọn vẹn
