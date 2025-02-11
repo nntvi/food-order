@@ -25,7 +25,6 @@ export default function LoginForm() {
     if (loginMutation.isPending) return
     try {
       const response = await loginMutation.mutateAsync(data)
-      console.log(response)
       toast({
         description: response.payload.message
       })

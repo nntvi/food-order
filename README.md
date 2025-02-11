@@ -330,3 +330,54 @@ Việc cập nhật password có thể làm thông thường như cái gửi bod
 ##### Nếu 2 người cùng xài 1 acc thì khi người này đổi password, server phải xoá access cũng như refresh hiện tại và tạo token mới lưu vào db
 
 => phải nhớ set lại token cho cookie cũng như local storage để tính năng trọn vẹn
+
+---
+
+#### Xử lý các case hết hạn của token - PHẦN NÀY QUAN TRỌNG LẮM NHAAAA
+
+Bên NextJs chúng ta có tận 2 môi trường: browser và server.
+
+##### Trước tiên phải làm tính năng, khi access token hết, phải logout ra
+
+- Chỉnh time hết hạn cho access là 10s để test
+- trong cookies khi hết hạn thì access token tự biến mất (cột expire trong application ak)
+- nhưng bên local storage sẽ vẫn còn => phải xoá thủ công
+  Thì sau 10s reload lại page thì việc đầu tiên là sẽ đi vào middleware để check trước
+  Kiểm tra thấy `accessToken` ko được gửi lên -> vì hết hạn nên cookies đã xoá r -> rơi vào case
+  "CHƯA ĐĂNG NHẬP THÌ KHÔNG CHO VÀO PRIVATE PATH" -> `đẩy về login`
+
+nhưng ko có hiện tượng logout nào cả
+
+- refresh token bên cookies vẫn còn
+- access/refresh token bên local storage vẫn còn
+  => Giờ sẽ xử lý vấn đề này :)
+
+##### 1. Tạo page logout: chuyển hướng của case xử lý bên trên thay vì đẩy về login -> chuyển nó tới page này khi accessToken hết hạn
+
+- Tại đây sử dụng useEffect để gọi mutation Logout. Nhưng cẩn thận vs useEffect tại đây vì có thể sinh ra re-render vô cực
+
+  - Khi `logoutMutation` gọi `mutateAsync` thì nó sẽ bị thay đổi tham chiếu ngay lập tức (vì logoutMutation là 1 obj) => useEffect sẽ nhận thấy, và gọi lại liên tục
+    => Cách giải quyết là sẽ lấy `{ mutateAsync}` từ `useLogoutMutation` ra để ko còn bị thay đổi tham chiếu nữa. Nhưng vì react có strict mode nên vẫn cứ bị gọi 2 lần
+
+    => Cách xử lý tiếp theo là khai báo 1 `useRef` cho giá trị của nó = null
+    Khi useEffect gọi lần đầu thì `ref.current` chính là = `mutateAsync` đó
+    Và khi đang chạy `mutateAsync` thì `setTimeout` 1s sau đó `ref.current` quay lại = null
+
+    => Vậy nghĩa là nếu ref.current này có giá trị thì sẽ return, ko call nữa
+
+##### 2. Đặt trường hợp, nếu một người nào đó vào website và gõ link `/logout` thì sẽ gọi api => logout => không hay
+
+- Phải là `../logout?refreshToken=1234565...` sao cho token khớp vs refresh token lưu trong cookies thì đúng
+  => Ở middleware phải phân rõ 3 trường hợp
+
+  - Chưa đăng nhập -> nghĩa là ko có refresh token -> case này đá thẳng về login
+  - Ngược lại nếu đã login rồi -> có quyền truy cập vào private paths - nhưng ko được vào login
+  - Và TH thứ 3, đây là case cần giải quyết`Login rồi nhưng accessToken hết hạn`
+
+    ```bash
+      if (privatePaths.some((path) => pathname.startsWith(path)) && !accessToken && refreshToken) {
+        const url = new URL('/logout', req.nextUrl)
+        url.searchParams.set('refreshToken', req.cookies.get('refreshToken')?.value ?? '')
+        return NextResponse.redirect(url.toString())
+      }
+    ```
