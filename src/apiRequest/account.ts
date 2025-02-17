@@ -11,6 +11,9 @@ const prefix = '/accounts'
 const accountApiRequest = {
   me: () => http.get<AccountResType>(`${prefix}/me`),
 
+  sMe: (accessToken: string) =>
+    http.get<AccountResType>(`${prefix}/me`, { headers: { Authorization: `Bearer ${accessToken}` } }),
+
   updateMe: (body: UpdateMeBodyType) => http.put<AccountResType>(`${prefix}/me`, body),
 
   changePassword: (body: ChangePasswordBodyType) => http.put<AccountResType>(`${prefix}/change-password`, body),

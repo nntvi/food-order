@@ -117,6 +117,8 @@ const request = async <Response>(
           }
         }
       } else {
+        // TH khi access token chúng ta còn hạn
+        // và gọi api ở Nextjs Server (Route Handler, Server component) đến server Back-end
         const accessToken = (options?.headers as any)?.Authorization.split('Bearer ')[1]
         redirect(`logout?accessToken=${accessToken}`)
       }

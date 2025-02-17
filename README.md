@@ -381,3 +381,54 @@ nhưng ko có hiện tượng logout nào cả
         return NextResponse.redirect(url.toString())
       }
     ```
+
+##### Nếu access và refresh token vẫn còn hạn nhưng vì một lý do nào đó mà server trả về 401 thì lúc đó phải làm gì???
+
+- trong page logout gọi api `sMe` ở server component và xử lý lỗi redirect khi rơi vào case ở http (là cho nó throw thoải mái, nếu không sẽ không quay về logout được, đó là một case đặt biệt của REDIRECT)
+
+```bash
+  // TH khi access token chúng ta còn hạn
+  // và gọi api ở Nextjs Server (Route Handler, Server component) đến server Back-end
+    const accessToken = (options?.headers as any)?.Authorization.split('Bearer ')[1]
+        redirect(`logout?accessToken=${accessToken}`
+```
+
+- check thêm access token trong page logout nữa để khớp với redirect bên trên.
+
+---
+
+#### Refresh token trong NextJs - RẤT QUAN TRỌNG
+
+Các API yêu cầu Authentication có thể được gọi ở 2 nơi
+
+1. ServerComponent: Ví dụ `/account/me` cần gọi API `/me` ở server component để lấy thông tin profile của user
+
+2. Client component: Ví dụ page `/account/me` cần gọi API `/me` ở client component để lấy thông tin profile của user
+
+=> Việc hết hạn có thể xảy ra ở Server Component và Client Component
+
+##### Các trường hợp hết hạn access token
+
+- Đang dùng thì hết hạn: Chúng ta sẽ không để trường hợp này xảy ra, bằng cách `có 1 set interval check token liên tục để refresh token trước khi nó hết hạn`
+
+- Lâu ngày không vào web, vào lại thì hết hạn:
+  Khi vào lại website thì middleware.ts sẽ được gọi đầu tiên. Chúng ta sẽ kiểm tra access token còn không(vì nó sẽ bị xoá khi hết hạn trong cookies, nhưng refresh vẫn còn -> nghĩa là còn vòng đời login), nếu không còn thì `gọi cho redirect về page client component có nhiệm vụ gọi API refresh token và redirect ngược lại về trang cũ`
+
+_Lưu ý:_
+
+- Không cho refresh token liên tục
+- Thứ tự trong middleware
+
+<u>Tạo refresh token router handler</u>
+
+- Gọi đến server back-end để lấy profile
+  ```bash
+    sMe: (accessToken: string) =>
+    http.get<AccountResType>(`${prefix}/me`, { headers: { Authorization: `Bearer ${accessToken}` } })
+  ```
+- `sRefreshToken` có route là `/auth/refresh-token`
+- `refreshToken` đi đến `/api/auth/refresh-token`
+- Xử lý route handler khi redirect về logout:
+  - Lấy access/refresh token từ url
+  - Kiểm tra nếu token ở url khác với local storage thì coi như bỏ
+  - nếu đúng thì xử lý logout để return đúng về login
