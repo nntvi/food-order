@@ -432,3 +432,98 @@ _Lưu ý:_
   - Lấy access/refresh token từ url
   - Kiểm tra nếu token ở url khác với local storage thì coi như bỏ
   - nếu đúng thì xử lý logout để return đúng về login
+
+##### Xử lý gạch đầu dòng thứ nhất: Đang dùng thì access token hết hạn
+
+<u>Lưu ý, để tránh bị bug trong lúc thực hiện Đang dùng thì hết hạn</u>
+
+- Không để cho refresh token bị duplicate: <b>NHỚ CLEAR INTERVAL TRONG CLEAN UP FUNCTION</b>
+- Khi refresh token bị lỗi ở route handler => trả về 401, bất kể lỗi gì: <b>KHI CÓ LỖI NHẢY VÀO CATCH CŨNG CLEAR INTERVAL NỐT</b>
+- Khi refresh token bị lỗi ở useEffect client => <b> ngừng interval ngay</b>
+- Đưa logic check vào layout ở trang authenticated: Không cho chạy refresh token ở những trang unauthenticate như: login, logout
+- Kiểm tra logic flow trong middleware
+
+##### Vậy logic ở refresh-token.tsx sẽ như nào??
+
+```bash
+  // Paths that do not require authentication
+  const UNAUTHENTICATED_PATHS = ['/login', '/register', 'refresh-token']
+  export default function RefreshToken() {
+    const pathname = usePathname()
+    useEffect(() => {
+      if (UNAUTHENTICATED_PATHS.includes(pathname)) return
+      let interval: any
+      const checkAndRefresh = async () => {
+        // không nên đưa logic lấy token ra khỏi function này
+        // để mỗi lần được gọi thì sẽ lấy được token mới
+        // tránh hiện tượng bug và lấy token đầu, xong gọi cho những lần tiếp theo
+
+        const accessToken = getAccessTokenFromLocalStorage()
+        const refreshToken = getRefreshTokenFromLocalStorage()
+        if (!accessToken || !refreshToken) return
+        const decodeAccessToken = jwt.decode(accessToken) as { exp: number; iat: number }
+        const decodeRefreshToken = jwt.decode(refreshToken) as { exp: number }
+
+        // thời điểm hết hạn của token là tính theo epoch time (s)
+        // còn khi dùng cú pháp new Date().getTime() thì sẽ trả về epoch time (ms)
+
+        const now = Math.round(new Date().getTime() / 1000)
+        // TH fresh token hết hạn => ko xử lý nữa
+        // ví dụ access token có thời gian hết hạn là 10s
+        // thì mình kiểm tra còn 1/3 thời gian (là 3s) thì sẽ cho refresh token lại
+        // time còn lại = decodeAccessToken.exp - now
+        // time hết hạn của access token = decodeAccessToken.exp - decodeAccessToken.iat
+
+        if (decodeAccessToken.exp - now < (decodeAccessToken.exp - decodeAccessToken.iat) / 3) {
+          try {
+            const res = await authApiRequest.refreshToken()
+            setAccessTokenToLocalStorage(res.payload.data.accessToken)
+            setRefreshTokenToLocalStorage(res.payload.data.refreshToken)
+          } catch (error) {
+            clearInterval(interval)
+          }
+        }
+      }
+      // phải gọi lần đầu tiên vì interval sẽ chạy sau thời gian timeout
+      checkAndRefresh()
+      // timeout interval phải bé hơn time hết hạn của access token
+      // ví dụ time hết hạn access token là 10s thì 1s mình check 1 lần
+      const TIMEOUT = 1000
+      interval = setInterval(checkAndRefresh, TIMEOUT)
+      return () => clearInterval(interval)
+    }, [pathname])
+    return null
+  }
+```
+
+Chú thích ở từng dòng code rất rõ ràng. Sau khi thực hiện việc check gọi lấy token mới. Khai báo ở AppProvider luôn, vì đã check chỉ hoạt động ở các page ko phải là login, register..
+
+```bash
+const AppProvider = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <RefreshToken />
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+  )
+}
+```
+
+Còn ở route `api/auth/refresh-token`, ở đây xử lý y hệt login, gọi lên server back end, trả về token mới và thực hiện lưu.
+Còn một vấn đề quan trọng, phải ngăn gọi refresh token 2 lần ở `api/auth/refresh-token.ts`.
+Khi api `refreshToken` đang được gọi, không làm thêm gì khác.
+
+```bash
+  refreshTokenRequest: null as Promise<{
+    status: number
+    payload: RefreshTokenResType
+  }> | null,
+  async refreshToken() {
+    if (this.refreshTokenRequest) return this.refreshTokenRequest
+    this.refreshTokenRequest = http.post<RefreshTokenResType>('/api/auth/refresh-token', null, { baseUrl: '' })
+    const result = await this.refreshTokenRequest
+    this.refreshTokenRequest = null
+    return result
+  }
+```

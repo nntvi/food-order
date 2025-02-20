@@ -110,7 +110,7 @@ const request = async <Response>(
             localStorage.removeItem('accessToken')
             localStorage.removeItem('refreshToken')
             clientLogoutRequest = null
-            // Redirect về login có thể dẫn đến looop vô hạn nếu không đc xử lý đúng cách
+            // Redirect về login có thể dẫn đến loop vô hạn nếu không đc xử lý đúng cách
             // Vì nếu rơi vào case ở trang login, có gọi api cần accessToken
             // Mà accessToken đã bị xoá => lại nhảy vào đây => lại redirect => ...
             location.href = '/login'
