@@ -16,8 +16,6 @@ export default function Logout() {
   useEffect(() => {
     if (
       ref.current ||
-      !refreshTokenFromUrl ||
-      !accessTokenFromUrl ||
       (refreshTokenFromUrl && refreshTokenFromUrl !== getRefreshTokenFromLocalStorage()) ||
       (accessTokenFromUrl && accessTokenFromUrl !== getAccessTokenFromLocalStorage())
     ) {

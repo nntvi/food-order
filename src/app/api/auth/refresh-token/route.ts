@@ -42,19 +42,13 @@ export async function POST(request: Request) {
     // thì từ cái route handler mình cũng trả về cái đó
     return Response.json(payload)
   } catch (error: any) {
-    if (error instanceof HttpError) {
-      return Response.json(error.payload, {
-        status: error.status
-      })
-    } else {
-      return Response.json(
-        {
-          message: error?.message ?? 'Internal Server Error'
-        },
-        {
-          status: 401
-        }
-      )
-    }
+    return Response.json(
+      {
+        message: error.message ?? 'Có lỗi xảy ra'
+      },
+      {
+        status: 401
+      }
+    )
   }
 }

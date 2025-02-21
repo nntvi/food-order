@@ -527,3 +527,23 @@ Khi api `refreshToken` đang được gọi, không làm thêm gì khác.
     return result
   }
 ```
+
+##### Xử lý gạch đầu dòng thứ hai: Lâu ngày không vào web, đến khi vào thì hết hạn access token | `gọi cho redirect về page client component có nhiệm vụ gọi API refresh token và redirect ngược lại về trang cũ`
+
+1. Đầu tiên vào web thì phải đi qua `middeware.ts`
+   Trước đó đã xử lý khi hết `accessToken` thì redirect về `logout`
+
+```bash
+  // Đăng nhập rồi nhưng accessToken hết hạn
+  if (privatePaths.some((path) => pathname.startsWith(path)) && !accessToken && refreshToken) {
+    const url = new URL('/refresh-token', req.nextUrl)
+    url.searchParams.set('refreshToken', req.cookies.get('refreshToken')?.value ?? '')
+    url.searchParams.set('redirect', pathname)
+    return NextResponse.redirect(url.toString())
+  }
+```
+
+2. Đem hàm `checkAndRefresh` bỏ vào utils để sd ở cả 2 chỗ, có thể truyền `onSucess` hoặc `onError` vào để xử lý.
+
+- Nếu thành công, lấy redirect ở đoạn code mục 1 để redirect về đúng page
+- Nếu có lỗi, nghĩa là hết hạn refresh luôn => tắt setInterval để ko bị lặp lại => quay về login
