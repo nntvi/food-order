@@ -76,9 +76,9 @@ export const checkAndRefresh = async (param?: { onError?: () => void; onSuccess?
   const decodeRefreshToken = jwt.decode(refreshToken) as { exp: number; iat: number }
   // thời điểm hết hạn của token là tính theo epoch time (s)
   // còn khi dùng cú pháp new Date().getTime() thì sẽ trả về epoch time (ms)
-  const now = Math.round(new Date().getTime() / 1000)
+  const now = new Date().getTime() / 1000 - 1
   // TH fresh token hết hạn => cho logout
-  if (decodeRefreshToken.exp < now) {
+  if (decodeRefreshToken.exp <= now) {
     removeTokenLocalStorage()
     return param?.onError && param.onError()
   }

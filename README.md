@@ -568,7 +568,13 @@ Trường hợp này đối với access token thì rắc rối, nhưng với re
   checkAndRefresh({
       onError: () => {
         clearInterval(interval)
-        router.push('/login')
+        router.push('/login')ß
       }
   })
 ```
+
+#### Lỗi refresh token hết hạn nhưng ko redirect về login???
+
+- Không nên làm tròn khi so sánh giá trị exp
+- Khi set cookie với expire thì sẽ bị lệch từ 0 - 1000ms
+- Router Cache mặc định Next.js là 30s kể từ lần request gần nhất
