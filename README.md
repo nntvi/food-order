@@ -547,3 +547,28 @@ Khi api `refreshToken` đang được gọi, không làm thêm gì khác.
 
 - Nếu thành công, lấy redirect ở đoạn code mục 1 để redirect về đúng page
 - Nếu có lỗi, nghĩa là hết hạn refresh luôn => tắt setInterval để ko bị lặp lại => quay về login
+
+#### Đang dùng thì refresh token hết hạn
+
+Trường hợp này đối với access token thì rắc rối, nhưng với refresh thì đơn giản hơn. Nếu nhận thấy nó hết hạn => xoá local storage và xử lý cho quay về trang login. Mình sẽ xử lý ở 2 chỗ
+
+- File utils
+
+```bash
+  // TH fresh token hết hạn => cho logout
+  if (decodeRefreshToken.exp < now) {
+    removeTokenLocalStorage()
+    return param?.onError && param.onError()
+  }
+```
+
+- refresh-token.tsx
+
+```bash
+  checkAndRefresh({
+      onError: () => {
+        clearInterval(interval)
+        router.push('/login')
+      }
+  })
+```

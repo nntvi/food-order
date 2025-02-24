@@ -80,7 +80,7 @@ export const checkAndRefresh = async (param?: { onError?: () => void; onSuccess?
   // TH fresh token hết hạn => cho logout
   if (decodeRefreshToken.exp < now) {
     removeTokenLocalStorage()
-    param?.onError && param.onError()
+    return param?.onError && param.onError()
   }
   // ví dụ access token có thời gian hết hạn là 10s
   // thì mình kiểm tra còn 1/3 thời gian (là 3s) thì sẽ cho refresh token lại
