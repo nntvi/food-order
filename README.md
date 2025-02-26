@@ -568,7 +568,7 @@ Trường hợp này đối với access token thì rắc rối, nhưng với re
   checkAndRefresh({
       onError: () => {
         clearInterval(interval)
-        router.push('/login')ß
+        router.push('/login')
       }
   })
 ```
@@ -578,3 +578,66 @@ Trường hợp này đối với access token thì rắc rối, nhưng với re
 - Không nên làm tròn khi so sánh giá trị exp
 - Khi set cookie với expire thì sẽ bị lệch từ 0 - 1000ms
 - Router Cache mặc định Next.js là 30s kể từ lần request gần nhất
+
+useEffect ở LoginForm chạy trước useEffect ở NavItem
+mà ở LoginForm là xoá token
+ở NavItem là check xem token có ko
+=> luôn chạy trước z nghĩa là nó luôn là false
+=> Loằng ngoằng quá biến chỗ này thành state lưu trong context điiii
+
+1. Ở `middleware`, TH nếu không có `refresh token`, thêm vào searchParam <u>clearToken</u>
+
+```bash
+if (!refreshToken && privatePaths.some((path) => pathname.startsWith(path))) {
+    const url = new URL('/login', req.nextUrl)
+    url.searchParams.set('clearToken', 'true')
+    return NextResponse.redirect(url.toString())
+  }
+```
+
+2. Thêm `context` vào `app-provider`. Sử dụng `useEffect` để check nếu có `accessToken` thì `isAuth` là true
+
+```bash
+  const AppContext = createContext({
+    isAuth: false,
+    setIsAuth: (isAuth: boolean) => {}
+  })
+
+  export const useAppContext = () => {
+    return useContext(AppContext)
+  }
+  const AppProvider = ({ children }: { children: React.ReactNode }) => {
+    const [isAuth, setIsAuthState] = useState(false)
+    const setIsAuth = (isAuth: boolean) => {
+      if (isAuth) {
+        setIsAuthState(isAuth)
+      } else {
+        setIsAuthState(false)
+        removeTokenLocalStorage()
+      }
+    }
+    useEffect(() => {
+      const accessToken = getAccessTokenFromLocalStorage()
+      if (accessToken) {
+        setIsAuthState(true)
+      }
+    }, [])
+
+    // Nếu dùng react 19 và next 15 thì ko cần AppContext.Provider
+    return (
+      <AppContext value={{ isAuth, setIsAuth }}>
+        <QueryClientProvider client={queryClient}>
+          {children}
+          <RefreshToken />
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
+      </AppContext>
+      )
+  }
+```
+
+3. Sau khi check ở `app-provider` rồi thì `Nav-Item` cũng như ở các page khác cần check token chỉ cần gọi ra là được
+
+```bash
+  const { isAuth, setIsAuth } = useAppContext()
+```

@@ -18,7 +18,9 @@ export default function RefreshTokenPage() {
         // không cần xử lý onError vì nếu refreshToken hết hạn thì api sẽ trả về 401
         // và nếu trả về 401 thì http sẽ tự bắt và redirect về login
       })
+    } else {
+      router.push('/login')
     }
   }, [router, refreshTokenFromUrl, redirectPathname])
-  return <div className='min-h-screen flex items-center justify-center'>Logout...</div>
+  return <div className='min-h-screen flex items-center justify-center'>Refresh token...</div>
 }

@@ -19,15 +19,16 @@ export default function Logout() {
       (refreshTokenFromUrl && refreshTokenFromUrl !== getRefreshTokenFromLocalStorage()) ||
       (accessTokenFromUrl && accessTokenFromUrl !== getAccessTokenFromLocalStorage())
     ) {
-      return
+      router.push('/')
+    } else {
+      ref.current = logoutMutation
+      logoutMutation().then(() => {
+        setTimeout(() => {
+          ref.current = null
+        }, 1000)
+        router.push('/login')
+      })
     }
-    ref.current = logoutMutation
-    logoutMutation().then(() => {
-      setTimeout(() => {
-        ref.current = null
-      }, 1000)
-      router.push('/login')
-    })
   }, [logoutMutation, router, refreshTokenFromUrl, accessTokenFromUrl])
   return <div className='min-h-screen flex items-center justify-center'>Logout...</div>
 }

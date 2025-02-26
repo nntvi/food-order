@@ -9,7 +9,9 @@ export function middleware(req: NextRequest) {
   const refreshToken = req.cookies.get('refreshToken')?.value
   // Chưa đăng nhập(chưa có refreshToken)
   if (!refreshToken && privatePaths.some((path) => pathname.startsWith(path))) {
-    return NextResponse.redirect(new URL('/login', req.nextUrl).toString())
+    const url = new URL('/login', req.nextUrl)
+    url.searchParams.set('clearToken', 'true')
+    return NextResponse.redirect(url.toString())
   }
   // Đăng nhập rồi nhưng accessToken hết hạn
   if (privatePaths.some((path) => pathname.startsWith(path)) && !accessToken && refreshToken) {
