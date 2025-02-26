@@ -8,6 +8,10 @@ import { set } from 'zod'
 
 const menuItems = [
   {
+    title: 'Trang chủ',
+    href: '/'
+  },
+  {
     title: 'Món ăn',
     href: '/menu'
   },
@@ -32,7 +36,6 @@ const menuItems = [
 
 export default function NavItems({ className }: { className?: string }) {
   const { isAuth } = useAppContext()
-
   return menuItems.map((item) => {
     if ((item.authRequired === false && isAuth) || (item.authRequired === true && !isAuth)) return null
     return (
