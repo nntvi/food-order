@@ -1,14 +1,16 @@
 'use client'
 
+import { useAppContext } from '@/components/app-provider'
 import { getAccessTokenFromLocalStorage, getRefreshTokenFromLocalStorage } from '@/lib/utils'
 import { useLogoutMutation } from '@/queries/useAuth'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useRef } from 'react'
+import { Suspense, useEffect, useRef } from 'react'
 
-export default function Logout() {
+function LogoutPage() {
   const { mutateAsync: logoutMutation } = useLogoutMutation()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { setIsAuth } = useAppContext()
   const refreshTokenFromUrl = searchParams.get('refreshToken')
   const accessTokenFromUrl = searchParams.get('accessToken')
   // đảm bảo cho logout chỉ gọi 1 lần thoi
@@ -26,9 +28,17 @@ export default function Logout() {
         setTimeout(() => {
           ref.current = null
         }, 1000)
+        setIsAuth(false)
         router.push('/login')
       })
     }
-  }, [logoutMutation, router, refreshTokenFromUrl, accessTokenFromUrl])
+  }, [logoutMutation, router, refreshTokenFromUrl, accessTokenFromUrl, setIsAuth])
   return <div className='min-h-screen flex items-center justify-center'>Logout...</div>
+}
+export default function Logout() {
+  return (
+    <Suspense fallback={null}>
+      <LogoutPage />
+    </Suspense>
+  )
 }

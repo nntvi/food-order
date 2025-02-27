@@ -2,10 +2,11 @@
 
 import { checkAndRefresh } from '@/lib/utils'
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 // Paths that do not require authentication
 const UNAUTHENTICATED_PATHS = ['/login', '/logout', '/refresh-token']
-export default function RefreshToken() {
+
+function RefreshTokenPage() {
   const pathname = usePathname()
   const router = useRouter()
   useEffect(() => {
@@ -35,4 +36,11 @@ export default function RefreshToken() {
     return () => clearInterval(interval)
   }, [pathname, router])
   return null
+}
+export default function RefreshToken() {
+  return (
+    <Suspense fallback={null}>
+      <RefreshTokenPage />
+    </Suspense>
+  )
 }
