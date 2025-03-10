@@ -43,6 +43,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { useSearchParams } from 'next/navigation'
 import AutoPagination from '@/components/auto-pagination'
+import { useGetAccountList } from '@/queries/useAcccount'
 
 type AccountItem = AccountListResType['data'][0]
 
@@ -60,15 +61,20 @@ const AccountTableContext = createContext<{
 
 export const columns: ColumnDef<AccountType>[] = [
   {
-    accessorKey: 'id',
-    header: 'ID'
+    id: 'stt',
+    header: 'STT',
+    cell: ({ row }) => <div>{row.index + 1}</div>
   },
+  // {
+  //   accessorKey: 'id',
+  //   header: 'ID'
+  // },
   {
     accessorKey: 'avatar',
     header: 'Avatar',
     cell: ({ row }) => (
       <div>
-        <Avatar className='aspect-square w-[100px] h-[100px] rounded-md object-cover'>
+        <Avatar className='aspect-square w-[50px] h-[50px] rounded-md object-cover'>
           <AvatarImage src={row.getValue('avatar')} />
           <AvatarFallback className='rounded-none'>{row.original.name}</AvatarFallback>
         </Avatar>
@@ -90,7 +96,7 @@ export const columns: ColumnDef<AccountType>[] = [
         </Button>
       )
     },
-    cell: ({ row }) => <div className='lowercase'>{row.getValue('email')}</div>
+    cell: ({ row }) => <div className=''>{row.getValue('email')}</div>
   },
   {
     id: 'actions',
@@ -163,9 +169,10 @@ export default function AccountTable() {
   const page = searchParam.get('page') ? Number(searchParam.get('page')) : 1
   const pageIndex = page - 1
   // const params = Object.fromEntries(searchParam.entries())
+  const accountListQuery = useGetAccountList()
+  const data = accountListQuery.data?.payload.data ?? []
   const [employeeIdEdit, setEmployeeIdEdit] = useState<number | undefined>()
   const [employeeDelete, setEmployeeDelete] = useState<AccountItem | null>(null)
-  const data: any[] = []
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
