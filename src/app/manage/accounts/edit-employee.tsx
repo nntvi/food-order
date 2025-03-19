@@ -109,6 +109,7 @@ export default function EditEmployee({
       onOpenChange={(value) => {
         if (!value) {
           setId(undefined)
+          reset()
         }
       }}
     >
