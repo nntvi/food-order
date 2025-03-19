@@ -29,6 +29,7 @@ export default function AddEmployee() {
   const avatarInputRef = useRef<HTMLInputElement | null>(null)
   const addAccountMutation = useAddAccount()
   const useUploadMedia = uploadMediaMutation()
+
   const form = useForm<CreateEmployeeAccountBodyType>({
     resolver: zodResolver(CreateEmployeeAccountBody),
     defaultValues: {

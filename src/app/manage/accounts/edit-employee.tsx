@@ -13,11 +13,15 @@ import { Label } from '@/components/ui/label'
 import { UpdateEmployeeAccountBody, UpdateEmployeeAccountBodyType } from '@/schemaValidations/account.schema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Upload } from 'lucide-react'
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Switch } from '@/components/ui/switch'
+import { useGetAccount, useUpdateAccount } from '@/queries/useAcccount'
+import { uploadMediaMutation } from '@/queries/useMedia'
+import { toast } from '@/hooks/use-toast'
+import { handleErrorApi } from '@/lib/utils'
 
 export default function EditEmployee({
   id,
@@ -28,6 +32,10 @@ export default function EditEmployee({
   setId: (value: number | undefined) => void
   onSubmitSuccess?: () => void
 }) {
+  const { data } = useGetAccount({ id: id as number, enabled: Boolean(id) })
+  const updateEmployeeMutation = useUpdateAccount()
+  const useUploadMedia = uploadMediaMutation()
+
   const [file, setFile] = useState<File | null>(null)
   const avatarInputRef = useRef<HTMLInputElement | null>(null)
   const form = useForm<UpdateEmployeeAccountBodyType>({
@@ -51,6 +59,50 @@ export default function EditEmployee({
     return avatar
   }, [file, avatar])
 
+  useEffect(() => {
+    if (data) {
+      const { name, email, avatar } = data.payload.data
+      form.reset({
+        name,
+        email,
+        avatar: avatar ?? undefined,
+        changePassword: form.getValues('changePassword'),
+        password: form.getValues('password'),
+        confirmPassword: form.getValues('confirmPassword')
+      })
+    }
+  }, [data])
+
+  const reset = () => {
+    form.reset()
+    setFile(null)
+  }
+
+  const onSubmit = async (values: UpdateEmployeeAccountBodyType) => {
+    if (updateEmployeeMutation.isPending) return
+    try {
+      let body: UpdateEmployeeAccountBodyType & { id: number } = { id: id as number, ...values }
+      if (file) {
+        const formData = new FormData()
+        formData.append('file', file)
+        const { payload } = await useUploadMedia.mutateAsync(formData)
+        const imageUrl = payload.data
+        body = { ...body, avatar: imageUrl }
+      }
+      const result = await updateEmployeeMutation.mutateAsync(body)
+      toast({
+        description: result.payload.message
+      })
+      setId(undefined)
+      reset()
+      onSubmitSuccess?.()
+    } catch (error) {
+      handleErrorApi({
+        error,
+        setError: form.setError
+      })
+    }
+  }
   return (
     <Dialog
       open={Boolean(id)}
@@ -66,7 +118,12 @@ export default function EditEmployee({
           <DialogDescription>Các trường tên, email, mật khẩu là bắt buộc</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form noValidate className='grid auto-rows-max items-start gap-4 md:gap-8' id='edit-employee-form'>
+          <form
+            noValidate
+            className='grid auto-rows-max items-start gap-4 md:gap-8'
+            id='edit-employee-form'
+            onSubmit={form.handleSubmit(onSubmit)}
+          >
             <div className='grid gap-4 py-4'>
               <FormField
                 control={form.control}
