@@ -21,6 +21,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { UpdateDishBody, UpdateDishBodyType } from '@/schemaValidations/dish.schema'
 import { DishStatus, DishStatusValues } from '@/constants/type'
 import { Textarea } from '@/components/ui/textarea'
+import { useGetDish, useUpdateDish } from '@/queries/useDish'
+import { uploadMediaMutation } from '@/queries/useMedia'
+import { toast } from '@/hooks/use-toast'
 
 export default function EditDish({
   id,
@@ -31,6 +34,9 @@ export default function EditDish({
   setId: (value: number | undefined) => void
   onSubmitSuccess?: () => void
 }) {
+  const { data } = useGetDish({ id: id as number, enabled: Boolean(id) })
+  const updateDishMutation = useUpdateDish()
+  const useUploadMedia = uploadMediaMutation()
   const [file, setFile] = useState<File | null>(null)
   const imageInputRef = useRef<HTMLInputElement | null>(null)
   const form = useForm<UpdateDishBodyType>({
@@ -39,7 +45,7 @@ export default function EditDish({
       name: '',
       description: '',
       price: 0,
-      image: '',
+      image: undefined,
       status: DishStatus.Unavailable
     }
   })
@@ -51,6 +57,51 @@ export default function EditDish({
     }
     return image
   }, [file, image])
+
+  useEffect(() => {
+    if (data) {
+      const { name, description, price, image, status } = data.payload.data
+      console.log('🚀 ~ useEffect ~ status:', status)
+      form.reset({
+        name,
+        description,
+        price,
+        image: image ?? undefined,
+        status
+      })
+    }
+  }, [data])
+  const reset = () => {
+    form.reset()
+    setFile(null)
+  }
+
+  const onSubmit = async (values: UpdateDishBodyType) => {
+    if (updateDishMutation.isPending) return
+    try {
+      let body: UpdateDishBodyType & { id: number } = { ...values, id: id as number }
+      if (file) {
+        console.log('🚀 ~ onSubmit ~ file:', file)
+        const formData = new FormData()
+        formData.append('file', file)
+        const { payload } = await useUploadMedia.mutateAsync(formData)
+        const imageUrl = payload.data
+        body = { ...body, image: imageUrl }
+      }
+      const result = await updateDishMutation.mutateAsync(body)
+      toast({
+        description: result.payload.message
+      })
+      reset()
+      setId(undefined)
+      onSubmitSuccess?.()
+    } catch (error) {
+      handleErrorApi({
+        error,
+        setError: form.setError
+      })
+    }
+  }
   return (
     <Dialog
       open={Boolean(id)}
@@ -66,7 +117,12 @@ export default function EditDish({
           <DialogDescription>Các trường sau đây là bắ buộc: Tên, ảnh</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form noValidate className='grid auto-rows-max items-start gap-4 md:gap-8' id='edit-dish-form'>
+          <form
+            noValidate
+            className='grid auto-rows-max items-start gap-4 md:gap-8'
+            id='edit-dish-form'
+            onSubmit={form.handleSubmit(onSubmit)}
+          >
             <div className='grid gap-4 py-4'>
               <FormField
                 control={form.control}
@@ -157,7 +213,7 @@ export default function EditDish({
                     <div className='grid grid-cols-4 items-center justify-items-start gap-4'>
                       <Label htmlFor='description'>Trạng thái</Label>
                       <div className='col-span-3 w-full space-y-2'>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder='Chọn trạng thái' />
