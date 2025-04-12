@@ -6,6 +6,7 @@ import { twMerge } from 'tailwind-merge'
 import jwt from 'jsonwebtoken'
 import authApiRequest from '@/apiRequest/auth'
 import { DishStatus, OrderStatus, TableStatus } from '@/constants/type'
+import envConfig from '@/config'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -142,4 +143,8 @@ export const formatCurrency = (number: number) => {
     style: 'currency',
     currency: 'VND'
   }).format(number)
+}
+
+export const getTableLink = ({ token, tableNumber }: { token: string; tableNumber: number }) => {
+  return envConfig.NEXT_PUBLIC_URL + '/tables/' + tableNumber + '?token=' + token
 }
