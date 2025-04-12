@@ -36,12 +36,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
-import { getVietnameseTableStatus } from '@/lib/utils'
+import { getTableLink, getVietnameseTableStatus } from '@/lib/utils'
 import { useSearchParams } from 'next/navigation'
 import AutoPagination from '@/components/auto-pagination'
 import { TableListResType } from '@/schemaValidations/table.schema'
 import EditTable from '@/app/manage/tables/edit-table'
 import AddTable from '@/app/manage/tables/add-table'
+import { useGetTableList } from '@/queries/useTable'
+import QRCodeTable from '@/components/qrcode-table'
 
 type TableItem = TableListResType['data'][0]
 
@@ -76,7 +78,15 @@ export const columns: ColumnDef<TableItem>[] = [
   {
     accessorKey: 'token',
     header: 'QR Code',
-    cell: ({ row }) => <div>{row.getValue('number')}</div>
+    cell: ({ row }) => (
+      <div>
+        <QRCodeTable token={row.getValue('token')} tableNumber={row.getValue('number')} width={100} />
+        {/* {getTableLink({
+          token: row.getValue('token'),
+          tableNumber: row.getValue('number')
+        })} */}
+      </div>
+    )
   },
   {
     id: 'actions',
@@ -148,10 +158,10 @@ export default function TableTable() {
   const searchParam = useSearchParams()
   const page = searchParam.get('page') ? Number(searchParam.get('page')) : 1
   const pageIndex = page - 1
-  // const params = Object.fromEntries(searchParam.entries())
+  const tableListQuery = useGetTableList()
   const [tableIdEdit, setTableIdEdit] = useState<number | undefined>()
   const [tableDelete, setTableDelete] = useState<TableItem | null>(null)
-  const data: any[] = []
+  const data = tableListQuery.data?.payload.data ?? []
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
