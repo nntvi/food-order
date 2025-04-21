@@ -6,12 +6,16 @@ import { Label } from '@/components/ui/label'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
-import { getTableLink, getVietnameseTableStatus } from '@/lib/utils'
+import { getTableLink, getVietnameseTableStatus, handleErrorApi } from '@/lib/utils'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { UpdateTableBody, UpdateTableBodyType } from '@/schemaValidations/table.schema'
 import { TableStatus, TableStatusValues } from '@/constants/type'
 import { Switch } from '@/components/ui/switch'
 import Link from 'next/link'
+import { useGetTable, useUpdateTable } from '@/queries/useTable'
+import { useEffect } from 'react'
+import { toast } from '@/hooks/use-toast'
+import QRCodeTable from '@/components/qrcode-table'
 
 export default function EditTable({
   id,
@@ -22,6 +26,8 @@ export default function EditTable({
   setId: (value: number | undefined) => void
   onSubmitSuccess?: () => void
 }) {
+  const { data } = useGetTable({ id: id as number, enabled: Boolean(id) })
+  const updateTableMutation = useUpdateTable()
   const form = useForm<UpdateTableBodyType>({
     resolver: zodResolver(UpdateTableBody),
     defaultValues: {
@@ -30,8 +36,42 @@ export default function EditTable({
       changeToken: false
     }
   })
-  const tableNumber = 0
+  const tableNumber = data?.payload.data.number
+  const onSubmit = async (values: UpdateTableBodyType) => {
+    if (updateTableMutation.isPending) return
+    try {
+      let body: UpdateTableBodyType & { id: number } = {
+        id: id as number,
+        ...values
+      }
+      const result = await updateTableMutation.mutateAsync(body)
+      toast({
+        description: `Cập nhật bàn ăn ${result.payload.data.number} thành công`
+      })
+      onReset()
+      onSubmitSuccess?.()
+    } catch (error) {
+      handleErrorApi({
+        error,
+        setError: form.setError
+      })
+    }
+  }
+  const onReset = () => {
+    form.reset()
+    setId(undefined)
+  }
+  useEffect(() => {
+    if (data) {
+      const { capacity, status, number } = data.payload.data
+      form.reset({
+        capacity,
+        status,
 
+        changeToken: form.getValues('changeToken')
+      })
+    }
+  }, [data, form])
   return (
     <Dialog
       open={Boolean(id)}
@@ -52,7 +92,12 @@ export default function EditTable({
           <DialogTitle>Cập nhật bàn ăn</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form noValidate className='grid auto-rows-max items-start gap-4 md:gap-8' id='edit-table-form'>
+          <form
+            noValidate
+            onSubmit={form.handleSubmit(onSubmit)}
+            className='grid auto-rows-max items-start gap-4 md:gap-8'
+            id='edit-table-form'
+          >
             <div className='grid gap-4 py-4'>
               <FormItem>
                 <div className='grid grid-cols-4 items-center justify-items-start gap-4'>
@@ -128,7 +173,12 @@ export default function EditTable({
               <FormItem>
                 <div className='grid grid-cols-4 items-center justify-items-start gap-4'>
                   <Label>QR Code</Label>
-                  <div className='col-span-3 w-full space-y-2'></div>
+                  <div className='col-span-3 w-full space-y-2'>
+                    <QRCodeTable
+                      token={data?.payload.data.token as string}
+                      tableNumber={data?.payload.data.number as number}
+                    />
+                  </div>
                 </div>
               </FormItem>
               <FormItem>
@@ -137,15 +187,15 @@ export default function EditTable({
                   <div className='col-span-3 w-full space-y-2'>
                     <Link
                       href={getTableLink({
-                        token: '123123123',
-                        tableNumber: tableNumber
+                        token: data?.payload.data.token as string,
+                        tableNumber: tableNumber as number
                       })}
                       target='_blank'
                       className='break-all'
                     >
                       {getTableLink({
-                        token: '123123123',
-                        tableNumber: tableNumber
+                        token: data?.payload.data.token as string,
+                        tableNumber: tableNumber as number
                       })}
                     </Link>
                   </div>
