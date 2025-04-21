@@ -641,3 +641,17 @@ if (!refreshToken && privatePaths.some((path) => pathname.startsWith(path))) {
 ```bash
   const { isAuth, setIsAuth } = useAppContext()
 ```
+
+---
+
+Các thao tac thuộc về CRUD của
+
+- accounts
+- dishes
+- tables
+  Sẽ không có gì cần nói nhiều, nhưng đến phần hiển thị QRCode của bàn ăn, sẽ có cái cần chú ý
+
+1. Thư viện QRCode nó sẽ vẽ lên thẻ Canvas
+2. Tạo 1 thẻ canvas ảo để thư viện QRCode vẽ lên cái ảo đó
+3. Khi edit sẽ edit lên canvas thật
+4. Cuối cùng thì sẽ đưa thẻ canvas ảo chứa QRCode ở trên vào thẻ canvas thật
