@@ -3,7 +3,7 @@ import { CreateDishBodyType, DishListResType, DishResType, UpdateDishBodyType } 
 
 const prefix = 'dishes'
 const dishApiRequest = {
-  list: () => http.get<DishListResType>(`${prefix}`),
+  list: () => http.get<DishListResType>(`${prefix}`, { next: { tags: ['dishes'] } }),
   getDish: (id: number) => http.get<DishResType>(`${prefix}/${id}`),
   deleteDish: (id: number) => http.delete<DishListResType>(`${prefix}/${id}`),
   createDish: (body: CreateDishBodyType) => http.post<DishListResType>(`${prefix}`, body),

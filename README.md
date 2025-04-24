@@ -655,3 +655,145 @@ Các thao tac thuộc về CRUD của
 2. Tạo 1 thẻ canvas ảo để thư viện QRCode vẽ lên cái ảo đó
 3. Khi edit sẽ edit lên canvas thật
 4. Cuối cùng thì sẽ đưa thẻ canvas ảo chứa QRCode ở trên vào thẻ canvas thật
+
+---
+
+#### Fetch dữ liệu món ăn cho trang chủ
+
+Gọi thẳng server -> sẽ không thấy gọi api ở tab network. Cách làm như sau
+
+```bash
+export default async function Home() {
+  let dishList: DishListResType['data'] = []
+  try {
+    const result = await dishApiRequest.list()
+    const {
+      payload: { data }
+    } = result
+    dishList = data
+  } catch (error) {
+    return <div>Something went wrong</div>
+  }
+  return (
+    <div className='w-full space-y-4'>
+      <section className='relative'>
+        <span className='absolute top-0 left-0 w-full h-full bg-black opacity-50 z-10'></span>
+        <Image
+          src='/banner.png'
+          width={400}
+          height={200}
+          quality={100}
+          alt='Banner'
+          className='absolute top-0 left-0 w-full h-full object-cover'
+        />
+        <div className='z-20 relative py-10 md:py-20 px-4 sm:px-10 md:px-20'>
+          <h1 className='text-center text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold'>Nhà hàng Big Boy</h1>
+          <p className='text-center text-sm sm:text-base mt-4'>Vị ngon, trọn khoảnh khắc</p>
+        </div>
+      </section>
+      <section className='space-y-10 py-16'>
+        <h2 className='text-center text-2xl font-bold'>Đa dạng các món ăn</h2>
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-10'>
+          {dishList.map((dish) => (
+            <div className='flex gap-4 w' key={dish.id}>
+              <div className='flex-shrink-0'>
+                <Image
+                  src={dish.image}
+                  width={150}
+                  height={150}
+                  alt={dish.name}
+                  quality={100}
+                  className='object-cover w-[150px] h-[150px] rounded-md'
+                />
+              </div>
+              <div className='space-y-1'>
+                <h3 className='text-xl font-semibold'>{dish.name}</h3>
+                <p className=''>{dish.description}</p>
+                <p className='font-semibold'>{formatCurrency(dish.price)}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  )
+}
+```
+
+<b>Chỗ image khi bị báo lỗi đừng quên vào `next.config.msj` để config lại nhé </b>
+
+```bash
+const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '4000',
+        pathname: '/**'
+      }
+    ]
+  }
+}
+```
+
+#### Tất cả những lỗi liên quan đến `useSearchParams` khi `npm run build` thì hãy xài <u>Suspense</u>
+
+---
+
+Quay lại trang chủ - nơi mà show các món ăn - api này ko cần token cũng run được
+
+\*\*Đặt câu hỏi Nếu api get list
+
+```bash
+list: () => http.get<DishListResType>(`${prefix}`) [1]
+```
+
+mình sửa thành
+
+```bash
+  list: () => http.get<DishListResType>(`${prefix}`, cache: 'no-store'), [2]
+```
+
+thì nó sẽ làm cho page dish này chuyển thành <i>Dynamic Rendering</i> tại nó là Static. Nhưng làm sao để check được Static????
+Vào thư mục .next -> server -> app -> index.html tìm thấy từ nào có tên là "Spaghetti" => nó phải fetch được api thì mới có dòng chữ này -> đó nghĩa là static rồi.
+
+Nhưng khi thêm cache: 'no-store' thì nó lại thành dynamic. Vì sao?? `cache: 'no-store'` nghĩa là nó không có cache nữa, mỗi khi người dùng request vào trang web nó sẽ render ra content mới nhất -> render content mới nhất mỗi khi request thì làm sao mà cache = đồng nghĩa với việc không tạo ra file static nữa
+
+=> Đối với Next.js 15 thì mặc định fetch sẽ là {cache: no-store} => dynamic rendering page
+Hiện tại Next.js 14 thì mặc định fetch sẽ là { cache: 'force-cache'} => nghĩa là cache (static rendering page)
+Và nếu bạn xài như [1] thì có nghĩa là nó sẽ fetching mỗi lần build
+
+##### Khi mà chúng ta đã build ra 1 project Nextjs rồi, nó đã render ra 1 file html rồi thì file đó KHÔNG THAY ĐỔI => gây ra vấn đề caching rất khó chịu !!!!
+
+1. Build project
+2. npm run start
+3. Vào sửa tên 1 món nào đó. vd: Spaghetti -> Spaghetti123
+4. Vào web = trình duyệt khác, vẫn là Spaghetti???? ko cập nhật cái mới
+5. Vào .next check file index -> search thấy vẫn là Spaghetti
+   ==> Search docs về Revalidate Data, ta nhận thấy có 2 kiểu làm
+
+- Theo thời gian: `fetch('https: ...', {next: {revalidate: 3600}})` => page nào dùng fetch api này nó sẽ tự build lại sao 1p
+- Revalidate ngay lập tức: `fetch('https: ...', {next: {tags: ['dishes']}})` - và mình sẽ dùng cái này
+
+```bash
+  list: () => http.get<DishListResType>(`${prefix}`, { next: { tags: ['dishes'] } }),
+```
+
+Sau đó vào src -> api -> tạo file revalidate/route.ts
+
+```bash
+  export async function GET(request: NextRequest) {
+    const tag = request.nextUrl.searchParams.get('tag')
+    revalidateTag(tag!)
+    return Response.json({ revalidated: true, now: Date.now() })
+  }
+```
+
+Khai báo thêm trong apiRequest -> revalidate.ts
+
+```bash
+  const revalidateApiRequest = (tag: string) => http.get(`/api/revalidate?tag=${tag}`, { baseUrl: '' })
+```
+
+Sau đó thêm gọi ra ở sau khi tạo hoặc edit món ăn thành công! => Thì khoảnh khắc user vào trang web ở bất cứ trình duyệt nào cũng sẽ có data mới nhất

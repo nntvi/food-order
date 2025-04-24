@@ -1,4 +1,5 @@
 'use client'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -9,19 +10,18 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog'
+import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { toast } from '@/hooks/use-toast'
+import { handleErrorApi } from '@/lib/utils'
+import { useAddAccount } from '@/queries/useAcccount'
+import { uploadMediaMutation } from '@/queries/useMedia'
 import { CreateEmployeeAccountBody, CreateEmployeeAccountBodyType } from '@/schemaValidations/account.schema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PlusCircle, Upload } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { useAddAccount } from '@/queries/useAcccount'
-import { uploadMediaMutation } from '@/queries/useMedia'
-import { toast } from '@/hooks/use-toast'
-import { handleErrorApi } from '@/lib/utils'
 
 export default function AddEmployee() {
   const [file, setFile] = useState<File | null>(null)

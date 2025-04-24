@@ -19,7 +19,7 @@ export default function LoginForm() {
   const searchParams = useSearchParams()
   const clearTokens = searchParams.get('clearTokens')
   const router = useRouter()
-  const { isAuth, setIsAuth } = useAppContext()
+  const { setIsAuth } = useAppContext()
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
     defaultValues: {
@@ -37,7 +37,7 @@ export default function LoginForm() {
         description: response.payload.message
       })
       router.push('/manage/dashboard')
-    } catch (error: any) {
+    } catch (error) {
       handleErrorApi({ error, setError: form.setError })
     }
   }

@@ -24,6 +24,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useGetDish, useUpdateDish } from '@/queries/useDish'
 import { uploadMediaMutation } from '@/queries/useMedia'
 import { toast } from '@/hooks/use-toast'
+import revalidateApiRequest from '@/apiRequest/revalidate'
 
 export default function EditDish({
   id,
@@ -89,6 +90,7 @@ export default function EditDish({
         body = { ...body, image: imageUrl }
       }
       const result = await updateDishMutation.mutateAsync(body)
+      await revalidateApiRequest('dishes')
       toast({
         description: result.payload.message
       })

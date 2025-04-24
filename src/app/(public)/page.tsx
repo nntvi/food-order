@@ -12,7 +12,7 @@ export default async function Home() {
     } = result
     dishList = data
   } catch (error) {
-    return <div>Something went wrong</div>
+    return <div>Something went wrong </div>
   }
   return (
     <div className='w-full space-y-4'>
