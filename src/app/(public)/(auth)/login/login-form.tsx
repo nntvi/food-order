@@ -19,7 +19,7 @@ export default function LoginForm() {
   const searchParams = useSearchParams()
   const clearTokens = searchParams.get('clearTokens')
   const router = useRouter()
-  const { setIsAuth } = useAppContext()
+  const { setRole } = useAppContext()
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
     defaultValues: {
@@ -32,7 +32,7 @@ export default function LoginForm() {
     if (loginMutation.isPending) return
     try {
       const response = await loginMutation.mutateAsync(data)
-      setIsAuth(true)
+      setRole(response.payload.data.account.role)
       toast({
         description: response.payload.message
       })
@@ -43,9 +43,9 @@ export default function LoginForm() {
   }
   useEffect(() => {
     if (clearTokens) {
-      setIsAuth(false)
+      setRole(undefined)
     }
-  }, [clearTokens, setIsAuth])
+  }, [clearTokens, setRole])
   return (
     <Card className='mx-auto max-w-sm'>
       <CardHeader>

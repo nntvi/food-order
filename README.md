@@ -797,3 +797,7 @@ Khai báo thêm trong apiRequest -> revalidate.ts
 ```
 
 Sau đó thêm gọi ra ở sau khi tạo hoặc edit món ăn thành công! => Thì khoảnh khắc user vào trang web ở bất cứ trình duyệt nào cũng sẽ có data mới nhất
+
+---
+
+#### Khách gọi món & Websocket
