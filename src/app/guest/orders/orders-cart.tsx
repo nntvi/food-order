@@ -1,10 +1,13 @@
 'use client'
 import { Badge } from '@/components/ui/badge'
 import { OrderStatus } from '@/constants/type'
+import { toast } from '@/hooks/use-toast'
+import socket from '@/lib/socket'
 import { cn, formatCurrency, getVietnameseOrderStatus } from '@/lib/utils'
 import { useGuestOrderListQuery } from '@/queries/useGuest'
+import { UpdateOrderResType } from '@/schemaValidations/order.schema'
 import Image from 'next/image'
-import React from 'react'
+import { useEffect } from 'react'
 
 const statusClass = {
   [OrderStatus.Delivered]: 'bg-green-100 text-green-800',
@@ -15,11 +18,47 @@ const statusClass = {
   default: 'bg-red-100 text-red-800'
 }
 export default function OrdersCart() {
-  const { data } = useGuestOrderListQuery()
+  const { data, refetch } = useGuestOrderListQuery()
   const orders = data?.payload.data || []
   const totalPrice = orders.reduce((result, order) => {
     return result + order.dishSnapshot.price * order.quantity
   }, 0)
+
+  useEffect(() => {
+    if (socket.connected) {
+      onConnect()
+    }
+    function onConnect() {
+      console.log(socket.id)
+    }
+    function onDisconnect() {
+      console.log('Disconnected from socket')
+    }
+    function onUpdateOrder(data: UpdateOrderResType['data']) {
+      console.log('update-order', data)
+      const {
+        dishSnapshot: { name },
+        quantity,
+        status
+      } = data
+      refetch()
+      toast({
+        description: `Món ăn ${name} (SL: ${quantity}) vừa được cập nhật sang trạng thái "${getVietnameseOrderStatus(
+          status
+        )}"`,
+        duration: 2000,
+        variant: 'default'
+      })
+    }
+    socket.on('update-order', onUpdateOrder)
+    socket.on('connect', onConnect)
+    socket.on('disconnect', onDisconnect)
+    return () => {
+      socket.off('connect', onConnect)
+      socket.off('disconnect', onDisconnect)
+      socket.off('update-order', onUpdateOrder)
+    }
+  }, [])
   return (
     <div className='space-y-4 px-4 pt-6 pb-24 text-white'>
       {orders.map((order, index) => (
