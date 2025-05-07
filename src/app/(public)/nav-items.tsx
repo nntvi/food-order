@@ -43,9 +43,7 @@ const menuItems: {
 // Nhưng ngay sau đó client render ra: Món ăn, Đơn hàng, Quản lý, do check được trạng thái
 
 export default function NavItems({ className }: { className?: string }) {
-  const { role } = useAppContext()
-  console.log('🚀 ~ NavItems ~ role:', role)
-  const { setRole } = useAppContext()
+  const { role, setRole } = useAppContext()
   const router = useRouter()
   const logoutMutation = useLogoutMutation()
   const logout = async () => {

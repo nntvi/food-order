@@ -1,5 +1,5 @@
 import orderApiRequest from '@/apiRequest/order'
-import { UpdateOrderBodyType } from '@/schemaValidations/order.schema'
+import { GetOrdersQueryParamsType, UpdateOrderBodyType } from '@/schemaValidations/order.schema'
 import { useMutation, useQueries, useQuery } from '@tanstack/react-query'
 
 export const useUpdateOrderMutation = () => {
@@ -7,9 +7,16 @@ export const useUpdateOrderMutation = () => {
     mutationFn: ({ id, ...body }: UpdateOrderBodyType & { id: number }) => orderApiRequest.updateOrder(id, body)
   })
 }
-export const useGetOrderListQuery = () => {
+export const useGetOrderListQuery = (queryParams: GetOrdersQueryParamsType) => {
   return useQuery({
-    queryFn: orderApiRequest.list,
-    queryKey: ['orders']
+    queryFn: () => orderApiRequest.getOrderList(queryParams),
+    queryKey: ['orders', queryParams]
+  })
+}
+
+export const useGetOrderDetailQuery = (orderId: number) => {
+  return useQuery({
+    queryFn: () => orderApiRequest.getOrderDetail(orderId),
+    queryKey: ['orders', orderId]
   })
 }
