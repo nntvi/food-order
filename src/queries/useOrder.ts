@@ -4,7 +4,8 @@ import { useMutation, useQueries, useQuery } from '@tanstack/react-query'
 
 export const useUpdateOrderMutation = () => {
   return useMutation({
-    mutationFn: ({ id, ...body }: UpdateOrderBodyType & { id: number }) => orderApiRequest.updateOrder(id, body)
+    mutationFn: ({ orderId, ...body }: UpdateOrderBodyType & { orderId: number }) =>
+      orderApiRequest.updateOrder(orderId, body)
   })
 }
 export const useGetOrderListQuery = (queryParams: GetOrdersQueryParamsType) => {
@@ -17,6 +18,7 @@ export const useGetOrderListQuery = (queryParams: GetOrdersQueryParamsType) => {
 export const useGetOrderDetailQuery = (orderId: number) => {
   return useQuery({
     queryFn: () => orderApiRequest.getOrderDetail(orderId),
-    queryKey: ['orders', orderId]
+    queryKey: ['orders', orderId],
+    enabled: Boolean(orderId)
   })
 }

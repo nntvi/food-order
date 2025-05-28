@@ -58,7 +58,7 @@ export default function OrdersCart() {
       socket.off('disconnect', onDisconnect)
       socket.off('update-order', onUpdateOrder)
     }
-  }, [])
+  }, [refetch])
   return (
     <div className='space-y-4 px-4 pt-6 pb-24 text-white'>
       {orders.map((order, index) => (
