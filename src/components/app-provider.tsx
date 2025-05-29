@@ -8,8 +8,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false,
-      refetchOnMount: false
+      refetchOnWindowFocus: false
     }
   }
 })

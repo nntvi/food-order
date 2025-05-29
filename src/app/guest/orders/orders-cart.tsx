@@ -6,6 +6,7 @@ import socket from '@/lib/socket'
 import { cn, formatCurrency, getVietnameseOrderStatus } from '@/lib/utils'
 import { useGuestOrderListQuery } from '@/queries/useGuest'
 import { UpdateOrderResType } from '@/schemaValidations/order.schema'
+import { CheckCircle, ShoppingCart, Wallet } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect } from 'react'
 
@@ -20,9 +21,30 @@ const statusClass = {
 export default function OrdersCart() {
   const { data, refetch } = useGuestOrderListQuery()
   const orders = data?.payload.data || []
-  const totalPrice = orders.reduce((result, order) => {
-    return result + order.dishSnapshot.price * order.quantity
-  }, 0)
+  const { unPaid, paid } = orders.reduce(
+    (result, order) => {
+      if (
+        order.status === OrderStatus.Delivered ||
+        order.status === OrderStatus.Pending ||
+        order.status === OrderStatus.Processing
+      ) {
+        return {
+          ...result,
+          unPaid: result.unPaid + order.dishSnapshot.price * order.quantity
+        }
+      } else if (order.status === OrderStatus.Paid) {
+        return {
+          ...result,
+          paid: result.paid + order.dishSnapshot.price * order.quantity
+        }
+      }
+      return result
+    },
+    {
+      unPaid: 0,
+      paid: 0
+    }
+  )
 
   useEffect(() => {
     if (socket.connected) {
@@ -100,11 +122,35 @@ export default function OrdersCart() {
       ))}
 
       {/* Box tổng */}
-      <div className='mt-6 flex justify-end'>
-        <div className='bg-white text-black w-full max-w-md rounded-md px-4 py-3 shadow-sm flex justify-between items-center ml-[2.5rem]'>
-          <span className='text-sm font-semibold'>Giỏ hàng · {orders.length} món</span>
-          <span className='text-sm font-bold'>{formatCurrency(totalPrice)}</span>
+      <div className='text-white w-full max-w-md rounded-lg px-4 py-4 shadow-md bg-gray-800'>
+        {/* Tổng số món */}
+        <div className='flex justify-between items-center text-sm font-semibold mb-2'>
+          <div className='flex items-center'>
+            <ShoppingCart className='w-4 h-4 mr-2 text-white' />
+            <span>Giỏ hàng:</span>
+          </div>
+          <span className='font-bold'>{orders.length} món</span>
         </div>
+
+        {/* Chưa thanh toán */}
+        <div className='flex justify-between items-center text-sm mb-1'>
+          <div className='flex items-center'>
+            <Wallet className='w-4 h-4 mr-2 text-yellow-500' />
+            <span className='font-semibold text-yellow-500'>Chưa thanh toán:</span>
+          </div>
+          <span className='font-bold text-yellow-400'>{formatCurrency(unPaid)}</span>
+        </div>
+
+        {/* Đã thanh toán */}
+        {paid !== 0 && (
+          <div className='flex justify-between items-center text-sm'>
+            <div className='flex items-center'>
+              <CheckCircle className='w-4 h-4 mr-2 text-green-500' />
+              <span className='font-semibold text-green-500'>Đã thanh toán:</span>
+            </div>
+            <span className='font-bold text-green-400'>{formatCurrency(paid)}</span>
+          </div>
+        )}
       </div>
     </div>
   )
