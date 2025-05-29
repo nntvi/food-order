@@ -179,15 +179,26 @@ export default function OrderTable() {
       })
       refetch()
     }
+    function onPayment(data: GuestCreateOrdersResType['data']) {
+      const { guest } = data[0]
+      toast({
+        description: `Đơn hàng thanh toán từ khách ${guest?.name} (Bàn số ${guest?.tableNumber})`,
+        duration: 5000,
+        variant: 'default'
+      })
+      refetch()
+    }
     socket.on('update-order', onUpdateOrder)
     socket.on('connect', onConnect)
     socket.on('disconnect', onDisconnect)
     socket.on('new-order', onNewOrder)
+    socket.on('payment', onPayment)
     return () => {
       socket.off('connect', onConnect)
       socket.off('disconnect', onDisconnect)
       socket.off('update-order', onUpdateOrder)
       socket.off('new-order', onNewOrder)
+      socket.off('payment', onPayment)
     }
   }, [refetchOrderList, fromDate, toDate])
 

@@ -5,6 +5,7 @@ import { toast } from '@/hooks/use-toast'
 import socket from '@/lib/socket'
 import { cn, formatCurrency, getVietnameseOrderStatus } from '@/lib/utils'
 import { useGuestOrderListQuery } from '@/queries/useGuest'
+import { GuestCreateOrdersResType } from '@/schemaValidations/guest.schema'
 import { UpdateOrderResType } from '@/schemaValidations/order.schema'
 import { CheckCircle, ShoppingCart, Wallet } from 'lucide-react'
 import Image from 'next/image'
@@ -72,13 +73,24 @@ export default function OrdersCart() {
         variant: 'default'
       })
     }
+    function onPayment(data: GuestCreateOrdersResType['data']) {
+      const { guest } = data[0]
+      toast({
+        description: `Đơn hàng thanh toán từ khách ${guest?.name} (Bàn số ${guest?.tableNumber})`,
+        duration: 5000,
+        variant: 'default'
+      })
+      refetch()
+    }
     socket.on('update-order', onUpdateOrder)
     socket.on('connect', onConnect)
     socket.on('disconnect', onDisconnect)
+    socket.on('payment', onPayment)
     return () => {
       socket.off('connect', onConnect)
       socket.off('disconnect', onDisconnect)
       socket.off('update-order', onUpdateOrder)
+      socket.off('payment', onPayment)
     }
   }, [refetch])
   return (
