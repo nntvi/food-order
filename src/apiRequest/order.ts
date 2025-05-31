@@ -1,5 +1,7 @@
 import http from '@/lib/http'
 import {
+  CreateOrdersBodyType,
+  CreateOrdersResType,
   GetOrderDetailResType,
   GetOrdersQueryParamsType,
   GetOrdersResType,
@@ -21,6 +23,7 @@ const orderApiRequest = {
       })}`,
       { next: { tags: ['orders'] } }
     ),
+  createOrder: (body: CreateOrdersBodyType) => http.post<CreateOrdersResType>(`${prefixList}`, body),
   updateOrder: (id: number, body: UpdateOrderBodyType) => http.put<UpdateOrderResType>(`${prefixList}/${id}`, body),
   getOrderDetail: (orderId: number) => http.get<GetOrderDetailResType>(`${prefixList}/${orderId}`),
   pay: (body: PayGuestOrdersBodyType) => http.post<PayGuestOrdersResType>(`${prefixList}/pay`, body)

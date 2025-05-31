@@ -801,3 +801,10 @@ Sau đó thêm gọi ra ở sau khi tạo hoặc edit món ăn thành công! => 
 ---
 
 #### Khách gọi món & Websocket
+
+#### Table
+
+Khi thay đổi token của table thì server sẽ xoá các refresh token của guest liên quan đến table đó. Điều này sẽ làm cho guest phải đăng nhập lại khi access token kết thúc. Mục đích là để ngăn chặn việc guest dặt đơn phá quán
+
+- status table là hidden, reversed thì guest sẽ không thể login và gọi món từ bàn đó
+- status table là hidden thì admin/employee cũng ko thể tạo order từ bàn đó. Chỉ còn Reversed thì admin/employee có thể tạo đơn hàng từ bản đồ
