@@ -9,6 +9,7 @@ import {
   CreateGuestBodyType,
   CreateGuestResType,
   GetGuestListQueryParamsType,
+  GetListGuestsResType,
   UpdateEmployeeAccountBodyType,
   UpdateMeBodyType
 } from '@/schemaValidations/account.schema'
@@ -40,7 +41,7 @@ const accountApiRequest = {
     http.put<AccountResType>(`${prefix}/detail/${id}`, body),
   deleteEmployee: (id: number) => http.delete<AccountResType>(`${prefix}/detail/${id}`),
   guestList: (queryParams: GetGuestListQueryParamsType) =>
-    http.get<AccountListResType>(
+    http.get<GetListGuestsResType>(
       `${prefix}/guests?` +
         queryString.stringify({
           ...queryParams,
