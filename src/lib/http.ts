@@ -112,6 +112,7 @@ const request = async <Response>(
           try {
             await clientLogoutRequest
           } catch (error) {
+          } finally {
             removeTokenLocalStorage()
             clientLogoutRequest = null
             // Redirect về login có thể dẫn đến loop vô hạn nếu không đc xử lý đúng cách
@@ -137,6 +138,13 @@ const request = async <Response>(
       removeTokenLocalStorage()
     } else if (['api/auth/login', 'api/guest/auth/login'].includes(normalizeUrl)) {
       const { accessToken, refreshToken } = (payload as LoginResType).data
+      setAccessTokenToLocalStorage(accessToken)
+      setRefreshTokenToLocalStorage(refreshToken)
+    } else if ('api/auth/token' === normalizeUrl) {
+      const { accessToken, refreshToken } = payload as {
+        accessToken: string
+        refreshToken: string
+      }
       setAccessTokenToLocalStorage(accessToken)
       setRefreshTokenToLocalStorage(refreshToken)
     }

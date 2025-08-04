@@ -26,11 +26,11 @@ import { useSearchParams } from 'next/navigation'
 import { createContext, useEffect, useState } from 'react'
 
 import TableSkeleton from '@/app/manage/orders/table-skeleton'
+import { useAppContext } from '@/components/app-provider'
 import { Button } from '@/components/ui/button'
 import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { toast } from '@/hooks/use-toast'
-import socket from '@/lib/socket'
 import { cn } from '@/lib/utils'
 import { useGetOrderListQuery, useUpdateOrderMutation } from '@/queries/useOrder'
 import { useGetTableList } from '@/queries/useTable'
@@ -61,6 +61,7 @@ const PAGE_SIZE = 10
 const initFromDate = startOfDay(new Date())
 const initToDate = endOfDay(new Date())
 export default function OrderTable() {
+  const { socket } = useAppContext()
   const searchParam = useSearchParams()
   const [openStatusFilter, setOpenStatusFilter] = useState(false)
   const [fromDate, setFromDate] = useState(initFromDate)
@@ -138,11 +139,11 @@ export default function OrderTable() {
   }
 
   useEffect(() => {
-    if (socket.connected) {
+    if (socket?.connected) {
       onConnect()
     }
     function onConnect() {
-      console.log(socket.id)
+      console.log(socket?.id)
     }
     function onDisconnect() {
       console.log('Disconnected from socket')
@@ -188,19 +189,19 @@ export default function OrderTable() {
       })
       refetch()
     }
-    socket.on('update-order', onUpdateOrder)
-    socket.on('connect', onConnect)
-    socket.on('disconnect', onDisconnect)
-    socket.on('new-order', onNewOrder)
-    socket.on('payment', onPayment)
+    socket?.on('update-order', onUpdateOrder)
+    socket?.on('connect', onConnect)
+    socket?.on('disconnect', onDisconnect)
+    socket?.on('new-order', onNewOrder)
+    socket?.on('payment', onPayment)
     return () => {
-      socket.off('connect', onConnect)
-      socket.off('disconnect', onDisconnect)
-      socket.off('update-order', onUpdateOrder)
-      socket.off('new-order', onNewOrder)
-      socket.off('payment', onPayment)
+      socket?.off('connect', onConnect)
+      socket?.off('disconnect', onDisconnect)
+      socket?.off('update-order', onUpdateOrder)
+      socket?.off('new-order', onNewOrder)
+      socket?.off('payment', onPayment)
     }
-  }, [refetchOrderList, fromDate, toDate])
+  }, [refetchOrderList, fromDate, toDate, socket])
 
   return (
     <OrderTableContext.Provider

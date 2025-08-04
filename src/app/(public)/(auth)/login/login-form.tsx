@@ -5,21 +5,41 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import envConfig from '@/config'
 import { toast } from '@/hooks/use-toast'
-import { handleErrorApi } from '@/lib/utils'
+import { generateSocketInstance, getAccessTokenFromLocalStorage, handleErrorApi } from '@/lib/utils'
 import { useLoginMutation } from '@/queries/useAuth'
 import { LoginBody, LoginBodyType } from '@/schemaValidations/auth.schema'
 import { zodResolver } from '@hookform/resolvers/zod'
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import { io } from 'socket.io-client'
+
+const getOauthGoogleUrl = () => {
+  const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth'
+  const options = {
+    redirect_uri: envConfig.NEXT_PUBLIC_GOOGLE_AUTHORIZED_REDIRECT_URI,
+    client_id: envConfig.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+    access_type: 'offline',
+    response_type: 'code',
+    prompt: 'consent',
+    scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email'].join(
+      ' '
+    )
+  }
+  const qs = new URLSearchParams(options)
+  return `${rootUrl}?${qs.toString()}`
+}
+const googleOauthUrl = getOauthGoogleUrl()
 
 export default function LoginForm() {
   const loginMutation = useLoginMutation()
   const searchParams = useSearchParams()
   const clearTokens = searchParams.get('clearTokens')
   const router = useRouter()
-  const { setRole } = useAppContext()
+  const { setRole, setSocket } = useAppContext()
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
     defaultValues: {
@@ -37,6 +57,7 @@ export default function LoginForm() {
         description: response.payload.message
       })
       router.push('/manage/dashboard')
+      setSocket(generateSocketInstance(response.payload.data.accessToken))
     } catch (error) {
       handleErrorApi({ error, setError: form.setError })
     }
@@ -91,9 +112,11 @@ export default function LoginForm() {
               <Button type='submit' className='w-full'>
                 Đăng nhập
               </Button>
-              <Button variant='outline' className='w-full' type='button'>
-                Đăng nhập bằng Google
-              </Button>
+              <Link href={googleOauthUrl}>
+                <Button variant='outline' className='w-full' type='button'>
+                  Đăng nhập bằng Google
+                </Button>
+              </Link>
             </div>
           </form>
         </Form>

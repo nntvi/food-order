@@ -1,8 +1,17 @@
+import { Role } from '@/constants/type'
 import { NextRequest, NextResponse } from 'next/server'
+import jwt from 'jsonwebtoken'
+import { TokenPayload } from '@/types/jwt.types'
 
-// vd:  pathname: /manage/dashboard
-const privatePaths = ['/manage']
+const managePaths = ['/manage']
+const guestPaths = ['/guest']
+const onlyOwnerPaths = ['/manage/accounts']
+const privatePaths = [...managePaths, ...guestPaths]
 const unAuthPaths = ['/login']
+export const decodeToken = (token: string) => {
+  return jwt.decode(token) as TokenPayload
+}
+// vd:  pathname: /manage/dashboard
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
   const accessToken = req.cookies.get('accessToken')?.value
@@ -20,6 +29,19 @@ export function middleware(req: NextRequest) {
     url.searchParams.set('redirect', pathname)
     return NextResponse.redirect(url.toString())
   }
+
+  // Vào không đúng role, redirect về trang chủ
+  const role = decodeToken(refreshToken as string)?.role
+  // Guest nhưng cố vào role Owner
+  const isGuestGoToManagePath = role === Role.Guest && managePaths.some((path) => pathname.startsWith(path))
+  // Không phải Guest nhưng cố vào role Guest
+  const isNotGuestGoToGuestPath = role !== Role.Guest && guestPaths.some((path) => pathname.startsWith(path))
+  // Không phải Owner nhưng cố tình truy cập vào các route dành cho owner
+  const isNotOwnerGoToOwnerPath = role !== Role.Owner && onlyOwnerPaths.some((path) => pathname.startsWith(path))
+  if (isGuestGoToManagePath || isNotGuestGoToGuestPath || isNotOwnerGoToOwnerPath) {
+    return NextResponse.redirect(new URL('/', req.nextUrl).toString())
+  }
+
   // nếu đã login rồi thì không cho vào login nữa
   if (unAuthPaths.some((path) => pathname.startsWith(path)) && refreshToken && accessToken) {
     return NextResponse.redirect(new URL('/', req.nextUrl).toString())

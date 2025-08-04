@@ -1,15 +1,15 @@
+import authApiRequest from '@/apiRequest/auth'
+import envConfig from '@/config'
+import { DishStatus, OrderStatus, TableStatus } from '@/constants/type'
 import { toast } from '@/hooks/use-toast'
 import { EntityError } from '@/lib/http'
+import { decodeToken } from '@/middleware'
 import { clsx, type ClassValue } from 'clsx'
-import { UseFormSetError } from 'react-hook-form'
-import { twMerge } from 'tailwind-merge'
-import jwt from 'jsonwebtoken'
-import authApiRequest from '@/apiRequest/auth'
-import { DishStatus, OrderStatus, TableStatus } from '@/constants/type'
-import envConfig from '@/config'
-import { TokenPayload } from '@/types/jwt.types'
 import { format } from 'date-fns'
 import { BookX, CookingPot, HandCoins, Loader, Truck } from 'lucide-react'
+import { UseFormSetError } from 'react-hook-form'
+import { io } from 'socket.io-client'
+import { twMerge } from 'tailwind-merge'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -70,7 +70,7 @@ export const removeTokenLocalStorage = () => {
     localStorage.removeItem('refreshToken')
   }
 }
-export const checkAndRefresh = async (param?: { onError?: () => void; onSuccess?: () => void }) => {
+export const checkAndRefresh = async (param?: { onError?: () => void; onSuccess?: () => void; force?: boolean }) => {
   // không nên đưa logic lấy token ra khỏi function này
   // để mỗi lần được gọi thì sẽ lấy được token mới
   // tránh hiện tượng bug và lấy token đầu, xong gọi cho những lần tiếp theo
@@ -91,7 +91,7 @@ export const checkAndRefresh = async (param?: { onError?: () => void; onSuccess?
   // thì mình kiểm tra còn 1/3 thời gian (là 3s) thì sẽ cho refresh token lại
   // time còn lại = decodeAccessToken.exp - now
   // time hết hạn của access token = decodeAccessToken.exp - decodeAccessToken.iat
-  if (decodeAccessToken.exp - now < (decodeAccessToken.exp - decodeAccessToken.iat) / 3) {
+  if (param?.force || decodeAccessToken.exp - now < (decodeAccessToken.exp - decodeAccessToken.iat) / 3) {
     try {
       const res = await authApiRequest.refreshToken()
       const { accessToken, refreshToken } = res.payload.data
@@ -152,10 +152,6 @@ export const getTableLink = ({ token, tableNumber }: { token: string; tableNumbe
   return envConfig.NEXT_PUBLIC_URL + '/tables/' + tableNumber + '?token=' + token
 }
 
-export const decodeToken = (token: string) => {
-  return jwt.decode(token) as TokenPayload
-}
-
 // vd: "Tường Vi" => "tuong" => cũng nằm trong "Tường Vi" => true
 export const simpleMatchText = (fullText: string, matchText: string) => {
   return removeAccents(fullText.toLowerCase()).includes(removeAccents(matchText.trim().toLowerCase()))
@@ -183,4 +179,17 @@ export const OrderStatusIcon = {
   [OrderStatus.Rejected]: BookX,
   [OrderStatus.Delivered]: Truck,
   [OrderStatus.Paid]: HandCoins
+}
+
+export const getRoleFromClient = () => {
+  const accessToken = getAccessTokenFromLocalStorage()
+  return accessToken ? decodeToken(accessToken).role : undefined
+}
+
+export const generateSocketInstance = (accessToken: string) => {
+  return io(envConfig.NEXT_PUBLIC_API_ENDPOINT, {
+    auth: {
+      Authorization: `Bearer ${accessToken}`
+    }
+  })
 }

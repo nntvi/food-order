@@ -11,7 +11,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 import { useLoginGuestMutation } from '@/queries/useGuest'
 import { useAppContext } from '@/components/app-provider'
-import { handleErrorApi } from '@/lib/utils'
+import { generateSocketInstance, handleErrorApi } from '@/lib/utils'
 
 export default function GuestLoginForm() {
   const searchParams = useSearchParams()
@@ -20,7 +20,7 @@ export default function GuestLoginForm() {
   const token = searchParams.get('token')
   const router = useRouter()
   const loginGuestMutation = useLoginGuestMutation()
-  const { setRole } = useAppContext()
+  const { setRole, setSocket } = useAppContext()
   const form = useForm<GuestLoginBodyType>({
     resolver: zodResolver(GuestLoginBody),
     defaultValues: {
@@ -42,6 +42,7 @@ export default function GuestLoginForm() {
       const result = await loginGuestMutation.mutateAsync(data)
       setRole(result.payload.data.guest.role)
       router.push('/guest/menu')
+      setSocket(generateSocketInstance(result.payload.data.accessToken))
     } catch (error) {
       handleErrorApi({
         error

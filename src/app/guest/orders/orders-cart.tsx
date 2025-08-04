@@ -1,8 +1,8 @@
 'use client'
+import { useAppContext } from '@/components/app-provider'
 import { Badge } from '@/components/ui/badge'
 import { OrderStatus } from '@/constants/type'
 import { toast } from '@/hooks/use-toast'
-import socket from '@/lib/socket'
 import { cn, formatCurrency, getVietnameseOrderStatus } from '@/lib/utils'
 import { useGuestOrderListQuery } from '@/queries/useGuest'
 import { GuestCreateOrdersResType } from '@/schemaValidations/guest.schema'
@@ -20,6 +20,7 @@ const statusClass = {
   default: 'bg-red-100 text-red-800'
 }
 export default function OrdersCart() {
+  const { socket } = useAppContext()
   const { data, refetch } = useGuestOrderListQuery()
   const orders = data?.payload.data || []
   const { unPaid, paid } = orders.reduce(
@@ -48,11 +49,11 @@ export default function OrdersCart() {
   )
 
   useEffect(() => {
-    if (socket.connected) {
+    if (socket?.connected) {
       onConnect()
     }
     function onConnect() {
-      console.log(socket.id)
+      console.log(socket?.id)
     }
     function onDisconnect() {
       console.log('Disconnected from socket')
@@ -82,15 +83,15 @@ export default function OrdersCart() {
       })
       refetch()
     }
-    socket.on('update-order', onUpdateOrder)
-    socket.on('connect', onConnect)
-    socket.on('disconnect', onDisconnect)
-    socket.on('payment', onPayment)
+    socket?.on('update-order', onUpdateOrder)
+    socket?.on('connect', onConnect)
+    socket?.on('disconnect', onDisconnect)
+    socket?.on('payment', onPayment)
     return () => {
-      socket.off('connect', onConnect)
-      socket.off('disconnect', onDisconnect)
-      socket.off('update-order', onUpdateOrder)
-      socket.off('payment', onPayment)
+      socket?.off('connect', onConnect)
+      socket?.off('disconnect', onDisconnect)
+      socket?.off('update-order', onUpdateOrder)
+      socket?.off('payment', onPayment)
     }
   }, [refetch])
   return (

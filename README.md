@@ -808,3 +808,178 @@ Khi thay đổi token của table thì server sẽ xoá các refresh token của
 
 - status table là hidden, reversed thì guest sẽ không thể login và gọi món từ bàn đó
 - status table là hidden thì admin/employee cũng ko thể tạo order từ bàn đó. Chỉ còn Reversed thì admin/employee có thể tạo đơn hàng từ bản đồ
+
+---
+
+### Role Based Access Control và Permission Based Access Control
+
+#### Access Control
+
+Là kiểm soát quyền truy cập. Có 2 kiểu phổ biến:
+
+- Role Based Access Control (RBAC): kiểm soát quyền truy cập dựa trên vai trò người dùng
+- Permission Based Access Control (PBAC): kiểm soát quyền truy cập dựa trên quyền của từng chức năng user
+
+#### Role Based Access Control (RBAC)
+
+Hệ thống quản lý quán ăn sẽ có 3 role chính
+
+- Admin: có quyền thao tác mọi chức năng
+- Employee: có quyền thao tác một số chức năng tạo như order, xem order nhưng không thể quản lý nhân viên khác
+- Guest: chỉ có quyền xem menu, tạo order
+
+Các quyền hạn ở mỗi role thường được định nghĩa cố định khi code
+Tất nhiên bình thường ở dự án khác cũng có thể code hệ thống thay đổi quyền hạn trên mỗi role 1 cách linh hoạt. Nhưng lưu ý là thay đổi quyền hạn trên mỗi role chứ ko phải là trên mỗi acc.
+
+<u><i>Mỗi acc sẽ được gắn với 1 role trên</i></u>
+
+#### Permission Based Access Control (PBAC)
+
+Thay vì chia theo role hệ thống sẽ chia theo từng quyền hạn cụ thể
+Vd: khi tạo acc, sẽ chọn 1 vài quyền cho acc này: READ_PROFILE, CREATE_ORDER...
+
+Khi cần thêm quyền hạn mới, admin sẽ thêm quyển hạn đó cho tài khoản cụ thể
+Đây vừa là ưu điểm, vừa là nhược điểm
+=> cách này linh hoạt hơn, vì có thể thêm quyền hạn mới cho từng người mà không cần phải tạo role mới
+Nhưng nó cũng khó kiểm soát các acc nếu lỡ sinh ra quá nhiều quyền hạn, khi hệ thống có quá nhiều tài khoản.
+
+---
+
+#### Stateful and Stateless Authentication
+
+Đây là 2 kiểu xác thực phổ biến nhất, đều dùng token để xác thực. Vậy sự khác biệt ở đây là gì?
+
+##### Stateful Authentication
+
+Token có thể là 1 string ngẫu nhiên hoặc JWT.
+
+Token sẽ được lưu trên server trong RAM server hoặc trong DB và client
+
+Mỗi lần client gửi request lên server, server sẽ request vào danh sách để kiểm tra xem token có hợp lệ không.
+
+##### Stateless Authentication
+
+Token thường là JWT
+Token không cần lưu ở server, chỉ cần lưu ở client là được
+Mỗi lần client gửi request lên server, server sẽ kiểm tra token có hợp lẹ không dựa trên thuật toán mã hoá, không cần request vào database.
+
+#### So sánh
+
+#### Quyền trong dự án
+
+- Owner: có quyền thao tác mọi thứ, ngoại trừ việc gọi api order vs vai trò là Guest
+- Employee: Tương tự Owner nhưng không có chức năng quản lý tài khoản nhân viên
+- Guest: Chỉ có quyền tạo order
+
+##### Chỗ role này có 1 vấn đề cần lưu ý
+
+Khi bạn là Owner và bạn vào đổi role cho 1 nhân viên nào đó -> Lúc này nhân viên được đổi role nếu đang đăng nhập thì token đang đăng nhập lập tức được đổi để phù hợp. Thì chỗ này mình sẽ cập nhật thông qua socket.
+
+```bash
+export default function RefreshToken() {
+  const pathname = usePathname()
+  const router = useRouter()
+  useEffect(() => {
+    if (UNAUTHENTICATED_PATHS.includes(pathname)) return
+    let interval: any
+
+    const onRefreshToken = (force?: boolean) =>
+      checkAndRefresh({
+        onError: () => {
+          clearInterval(interval)
+          router.push('/login')
+        },
+        force
+      })
+    // phải gọi lần đầu tiên vì interval sẽ chạy sau thời gian timeout
+    onRefreshToken()
+
+    // timeout interval phải bé hơn time hết hạn của access token
+    // ví dụ time hết hạn access token là 10s thì 1s mình check 1 lần
+    const TIMEOUT = 1000
+    interval = setInterval(onRefreshToken, TIMEOUT)
+
+    if (socket.connected) {
+      onConnect()
+    }
+    function onConnect() {
+      console.log(socket.id)
+    }
+    function onDisconnect() {
+      console.log('Disconnected from socket')
+    }
+
+    function onRefreshTokenSocket() {
+      onRefreshToken(true)
+    }
+    socket.on('connect', onConnect)
+    socket.on('disconnect', onDisconnect)
+    socket.on('refresh-token', onRefreshTokenSocket)
+    return () => {
+      clearInterval(interval)
+      socket.off('connect', onConnect)
+      socket.off('disconnect', onDisconnect)
+      socket.off('refresh-token', onRefreshToken)
+    }
+  }, [pathname, router])
+  return null
+}
+```
+
+Thắc mắc tiếp theo hoặc xem tới đây mà quên hàm `checkAndRefresh` để làm gì thì có tóm tắt ngắn gọn như sau, hàm đó cập nhật lại access/refresh token mới khi nó gần hết hạn. Giờ chưa hết mà bị đổi role cũng cập nhật lại luôn => mới thêm 1 biến <b>force</b>
+
+```bash
+export const checkAndRefresh = async (param?: { onError?: () => void; onSuccess?: () => void; force?: boolean }) => {
+  // không nên đưa logic lấy token ra khỏi function này
+  // để mỗi lần được gọi thì sẽ lấy được token mới
+  // tránh hiện tượng bug và lấy token đầu, xong gọi cho những lần tiếp theo
+  const accessToken = getAccessTokenFromLocalStorage()
+  const refreshToken = getRefreshTokenFromLocalStorage()
+  if (!accessToken || !refreshToken) return
+  const decodeAccessToken = decodeToken(accessToken)
+  const decodeRefreshToken = decodeToken(refreshToken)
+  // thời điểm hết hạn của token là tính theo epoch time (s)
+  // còn khi dùng cú pháp new Date().getTime() thì sẽ trả về epoch time (ms)
+  const now = new Date().getTime() / 1000 - 1
+  // TH fresh token hết hạn => cho logout
+  if (decodeRefreshToken.exp <= now) {
+    removeTokenLocalStorage()
+    return param?.onError && param.onError()
+  }
+  // ví dụ access token có thời gian hết hạn là 10s
+  // thì mình kiểm tra còn 1/3 thời gian (là 3s) thì sẽ cho refresh token lại
+  // time còn lại = decodeAccessToken.exp - now
+  // time hết hạn của access token = decodeAccessToken.exp - decodeAccessToken.iat
+  if (param?.force || decodeAccessToken.exp - now < (decodeAccessToken.exp - decodeAccessToken.iat) / 3) {
+    try {
+      const res = await authApiRequest.refreshToken()
+      const { accessToken, refreshToken } = res.payload.data
+      setAccessTokenToLocalStorage(accessToken)
+      setRefreshTokenToLocalStorage(refreshToken)
+      param?.onSuccess && param.onSuccess()
+    } catch (error) {
+      param?.onError && param.onError()
+    }
+  }
+}
+```
+
+---
+
+#### Sau khi bạn phân quyền xong, thì chỉ có role Owner mới được vào route manage accounts thôi
+
+=> giờ mình sẽ sửa nó ở middleware
+
+```bash
+  // Vào không đúng role, redirect về trang chủ
+  const role = decodeToken(refreshToken as string)?.role
+  // Guest nhưng cố vào role Owner
+  const isGuestGoToManagePath = role === Role.Guest && managePaths.some((path) => pathname.startsWith(path))
+  // Không phải Guest nhưng cố vào role Guest
+  const isNotGuestGoToGuestPath = role !== Role.Guest && guestPaths.some((path) => pathname.startsWith(path))
+  // Không phải Owner nhưng cố tình truy cập vào các route dành cho owner
+  const isNotOwnerGoToOwnerPath = role !== Role.Owner && onlyOwnerPaths.some((path) => pathname.startsWith(path))
+  if (isGuestGoToManagePath || isNotGuestGoToGuestPath || isNotOwnerGoToOwnerPath) {
+    return NextResponse.redirect(new URL('/', req.nextUrl).toString())
+  }
+```

@@ -10,7 +10,7 @@ function LogoutPage() {
   const { mutateAsync: logoutMutation } = useLogoutMutation()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { setRole } = useAppContext()
+  const { setRole, disconnectSocket } = useAppContext()
   const refreshTokenFromUrl = searchParams.get('refreshToken')
   const accessTokenFromUrl = searchParams.get('accessToken')
   // đảm bảo cho logout chỉ gọi 1 lần thoi
@@ -28,11 +28,12 @@ function LogoutPage() {
         setTimeout(() => {
           ref.current = null
         }, 1000)
+        disconnectSocket()
         setRole(undefined)
         router.push('/login')
       })
     }
-  }, [logoutMutation, router, refreshTokenFromUrl, accessTokenFromUrl, setRole])
+  }, [logoutMutation, router, refreshTokenFromUrl, accessTokenFromUrl, setRole, disconnectSocket])
   return <div className='min-h-screen flex items-center justify-center'>Logout...</div>
 }
 export default function Logout() {

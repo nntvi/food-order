@@ -17,7 +17,7 @@ import { useAccountMe } from '@/queries/useAcccount'
 import { useAppContext } from '@/components/app-provider'
 
 export default function DropdownAvatar() {
-  const { setRole } = useAppContext()
+  const { setRole, disconnectSocket } = useAppContext()
   const logoutMutation = useLogoutMutation()
   const router = useRouter()
   const { data } = useAccountMe()
@@ -26,6 +26,7 @@ export default function DropdownAvatar() {
     if (logoutMutation.isPending) return
     try {
       await logoutMutation.mutateAsync()
+      disconnectSocket()
       setRole(undefined)
       router.push('/')
     } catch (error) {
