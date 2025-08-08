@@ -1,5 +1,5 @@
 'use client'
-import { useAppContext } from '@/components/app-provider'
+import { useAppStore } from '@/components/app-provider'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
@@ -15,7 +15,6 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { io } from 'socket.io-client'
 
 const getOauthGoogleUrl = () => {
   const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth'
@@ -39,7 +38,8 @@ export default function LoginForm() {
   const searchParams = useSearchParams()
   const clearTokens = searchParams.get('clearTokens')
   const router = useRouter()
-  const { setRole, setSocket } = useAppContext()
+  const setRole = useAppStore((state) => state.setRole)
+  const setSocket = useAppStore((state) => state.setSocket)
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
     defaultValues: {

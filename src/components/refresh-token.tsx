@@ -2,14 +2,15 @@
 import { checkAndRefresh } from '@/lib/utils'
 import { usePathname, useRouter } from 'next/navigation'
 import { Suspense, useEffect } from 'react'
-import { useAppContext } from '@/components/app-provider'
+import { useAppStore } from '@/components/app-provider'
 // Paths that do not require authentication
 const UNAUTHENTICATED_PATHS = ['/login', '/logout', '/refresh-token']
 
 export default function RefreshToken() {
   const pathname = usePathname()
   const router = useRouter()
-  const { socket, setSocket } = useAppContext()
+  const socket = useAppStore((state) => state.socket)
+  const setSocket = useAppStore((state) => state.setSocket)
   useEffect(() => {
     if (UNAUTHENTICATED_PATHS.includes(pathname)) return
     let interval: any

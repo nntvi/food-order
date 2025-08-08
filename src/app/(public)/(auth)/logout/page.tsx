@@ -1,6 +1,6 @@
 'use client'
 
-import { useAppContext } from '@/components/app-provider'
+import { useAppStore } from '@/components/app-provider'
 import { getAccessTokenFromLocalStorage, getRefreshTokenFromLocalStorage } from '@/lib/utils'
 import { useLogoutMutation } from '@/queries/useAuth'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -10,7 +10,8 @@ function LogoutPage() {
   const { mutateAsync: logoutMutation } = useLogoutMutation()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { setRole, disconnectSocket } = useAppContext()
+  const setRole = useAppStore((state) => state.setRole)
+  const disconnectSocket = useAppStore((state) => state.disconnectSocket)
   const refreshTokenFromUrl = searchParams.get('refreshToken')
   const accessTokenFromUrl = searchParams.get('accessToken')
   // đảm bảo cho logout chỉ gọi 1 lần thoi

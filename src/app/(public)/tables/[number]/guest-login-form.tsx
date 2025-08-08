@@ -10,7 +10,7 @@ import { GuestLoginBody, GuestLoginBodyType } from '@/schemaValidations/guest.sc
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 import { useLoginGuestMutation } from '@/queries/useGuest'
-import { useAppContext } from '@/components/app-provider'
+import { useAppStore } from '@/components/app-provider'
 import { generateSocketInstance, handleErrorApi } from '@/lib/utils'
 
 export default function GuestLoginForm() {
@@ -20,7 +20,8 @@ export default function GuestLoginForm() {
   const token = searchParams.get('token')
   const router = useRouter()
   const loginGuestMutation = useLoginGuestMutation()
-  const { setRole, setSocket } = useAppContext()
+  const setRole = useAppStore((state) => state.setRole)
+  const setSocket = useAppStore((state) => state.setSocket)
   const form = useForm<GuestLoginBodyType>({
     resolver: zodResolver(GuestLoginBody),
     defaultValues: {

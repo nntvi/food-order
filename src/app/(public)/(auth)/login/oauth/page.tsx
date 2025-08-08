@@ -1,5 +1,5 @@
 'use client'
-import { useAppContext } from '@/components/app-provider'
+import { useAppStore } from '@/components/app-provider'
 import { toast } from '@/hooks/use-toast'
 import { generateSocketInstance } from '@/lib/utils'
 import { decodeToken } from '@/middleware'
@@ -11,11 +11,13 @@ export default function OAuthPage() {
   const { mutateAsync } = useSetTokenToCookieMutation()
   const router = useRouter()
   const count = useRef(0)
-  const { setRole, setSocket } = useAppContext()
   const searchParams = useSearchParams()
   const accessToken = searchParams.get('accessToken')
   const refreshToken = searchParams.get('refreshToken')
   const message = searchParams.get('message')
+  const role = useAppStore((state) => state.role)
+  const setRole = useAppStore((state) => state.setRole)
+  const setSocket = useAppStore((state) => state.setSocket)
   useEffect(() => {
     if (accessToken && refreshToken) {
       if (count.current === 0) {

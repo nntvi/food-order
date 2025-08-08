@@ -1,5 +1,5 @@
 'use client'
-import { useAppContext } from '@/components/app-provider'
+import { useAppStore } from '@/components/app-provider'
 import { Badge } from '@/components/ui/badge'
 import { OrderStatus } from '@/constants/type'
 import { toast } from '@/hooks/use-toast'
@@ -20,7 +20,7 @@ const statusClass = {
   default: 'bg-red-100 text-red-800'
 }
 export default function OrdersCart() {
-  const { socket } = useAppContext()
+  const socket = useAppStore((state) => state.socket)
   const { data, refetch } = useGuestOrderListQuery()
   const orders = data?.payload.data || []
   const { unPaid, paid } = orders.reduce(

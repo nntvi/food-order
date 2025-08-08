@@ -26,7 +26,7 @@ import { useSearchParams } from 'next/navigation'
 import { createContext, useEffect, useState } from 'react'
 
 import TableSkeleton from '@/app/manage/orders/table-skeleton'
-import { useAppContext } from '@/components/app-provider'
+import { useAppStore } from '@/components/app-provider'
 import { Button } from '@/components/ui/button'
 import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -61,7 +61,7 @@ const PAGE_SIZE = 10
 const initFromDate = startOfDay(new Date())
 const initToDate = endOfDay(new Date())
 export default function OrderTable() {
-  const { socket } = useAppContext()
+  const socket = useAppStore((state) => state.socket)
   const searchParam = useSearchParams()
   const [openStatusFilter, setOpenStatusFilter] = useState(false)
   const [fromDate, setFromDate] = useState(initFromDate)

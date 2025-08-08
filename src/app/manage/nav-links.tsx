@@ -1,6 +1,6 @@
 'use client'
 import menuItems from '@/app/manage/menuItems'
-import { useAppContext } from '@/components/app-provider'
+import { useAppStore } from '@/components/app-provider'
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip'
 import { cn, getRoleFromClient } from '@/lib/utils'
 import { Package2, Settings } from 'lucide-react'
@@ -9,18 +9,17 @@ import { usePathname } from 'next/navigation'
 
 export default function NavLinks() {
   const pathname = usePathname()
-  const { role } = useAppContext()
-
+  const role = useAppStore((state) => state.role)
   return (
     <TooltipProvider>
       <aside className='fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex'>
         <nav className='flex flex-col items-center gap-4 px-2 py-4'>
           <Link
-            href='#'
+            href='/'
             className='group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base'
           >
             <Package2 className='h-4 w-4 transition-all group-hover:scale-110' />
-            <span className='sr-only'>Acme Inc</span>
+            <span className='sr-only'>Restaurant</span>
           </Link>
 
           {menuItems.map((Item, index) => {
