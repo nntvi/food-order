@@ -6,9 +6,11 @@ import DarkModeToggle from '@/components/dark-mode-toggle'
 import NavItems from '@/app/(public)/nav-items'
 
 export default function Layout({
-  children
+  children,
+  modal
 }: Readonly<{
   children: React.ReactNode
+  modal: React.ReactNode
 }>) {
   return (
     <div className='flex min-h-screen w-full flex-col relative'>
@@ -16,7 +18,7 @@ export default function Layout({
         <nav className='hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6'>
           <Link href='#' className='flex items-center gap-2 text-lg font-semibold md:text-base'>
             <Package2 className='h-6 w-6' />
-            <span className='sr-only'>Big boy</span>
+            <span className='sr-only'> </span>
           </Link>
           <NavItems className='text-muted-foreground transition-colors hover:text-foreground flex-shrink-0' />
         </nav>
@@ -36,7 +38,7 @@ export default function Layout({
             <nav className='grid gap-6 text-lg font-medium'>
               <Link href='#' className='flex items-center gap-2 text-lg font-semibold'>
                 <Package2 className='h-6 w-6' />
-                <span className='sr-only'>Big boy</span>
+                <span className='sr-only'> </span>
               </Link>
 
               <NavItems className='text-muted-foreground transition-colors hover:text-foreground' />
@@ -48,7 +50,10 @@ export default function Layout({
           <DarkModeToggle />
         </div>
       </header>
-      <main className='flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8'>{children}</main>
+      <main className='flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8'>
+        {children}
+        {modal}
+      </main>
     </div>
   )
 }

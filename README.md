@@ -687,7 +687,7 @@ export default async function Home() {
           className='absolute top-0 left-0 w-full h-full object-cover'
         />
         <div className='z-20 relative py-10 md:py-20 px-4 sm:px-10 md:px-20'>
-          <h1 className='text-center text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold'>Nhà hàng Big Boy</h1>
+          <h1 className='text-center text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold'>Nhà hàng  </h1>
           <p className='text-center text-sm sm:text-base mt-4'>Vị ngon, trọn khoảnh khắc</p>
         </div>
       </section>
@@ -973,13 +973,45 @@ export const checkAndRefresh = async (param?: { onError?: () => void; onSuccess?
 ```bash
   // Vào không đúng role, redirect về trang chủ
   const role = decodeToken(refreshToken as string)?.role
+
   // Guest nhưng cố vào role Owner
   const isGuestGoToManagePath = role === Role.Guest && managePaths.some((path) => pathname.startsWith(path))
+
   // Không phải Guest nhưng cố vào role Guest
   const isNotGuestGoToGuestPath = role !== Role.Guest && guestPaths.some((path) => pathname.startsWith(path))
+
   // Không phải Owner nhưng cố tình truy cập vào các route dành cho owner
   const isNotOwnerGoToOwnerPath = role !== Role.Owner && onlyOwnerPaths.some((path) => pathname.startsWith(path))
   if (isGuestGoToManagePath || isNotGuestGoToGuestPath || isNotOwnerGoToOwnerPath) {
     return NextResponse.redirect(new URL('/', req.nextUrl).toString())
   }
 ```
+
+#### Sơ lược về Parallel Route
+
+Tạo name folder với `@` phía trước thì ta gọi đó là slot: `@settings`, `@modal`, ...
+
+Slot thì không tạo ra route segment, khá giống với route trong group (`()`)
+
+Ví dụ tạo file với đường dẫn `app/@modal/pages.tsx` thì route segment là `/` chứ ko phải là `/modal`
+
+### Làm sao để slot hoạt động (active state)?
+
+Muốn slot active phải đảm bảo
+
+- URL phải khớp với route slot
+- SLot phải được dùng trong `layout.tsx`
+  Khi active thì slot sẽ render file `page.tsx` trong slot
+
+Trong trường hợp không active thì slot sẽ render file `default.tsx` trong slot, nếu không có file này thì sẽ render 404. => Để tránh 404 thì người ta thường return null trong file `default.tsx`
+
+### Intercepting Route
+
+- Parallel Route (Route song song): Render component (`page.tsx` hoặc `default.tsx`) cùng với route hiện tại
+- Intercepting Route (Route chặn); Khi navigate, thay vì render `page.tsx` đích đến, nó sẽ render `page.tsx` ở route chặn. <b>Điều này không xảy ra khi full page load</b>
+
+### Cách hoạt động
+
+Khai báo tên folder theo `(.) (....), (...)`
+`...` là dựa vào route segment chứ ko dựa vào folder path
+Khai báo intercepting route ở đâu thì những page ở level đó và con của nó sẽ bị chặn

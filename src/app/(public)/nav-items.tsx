@@ -23,10 +23,6 @@ const menuItems: {
     href: '/guest/menu',
     role: [Role.Guest]
   },
-  // {
-  //   title: 'Đơn hàng',
-  //   href: '/orders'
-  // },
   {
     title: 'Đăng nhập',
     href: '/login',

@@ -15,7 +15,8 @@ const configProject = configSchema.safeParse({
 })
 
 if (!configProject.success) {
-  console.error('Missing env variables', configProject.error.errors)
+  // Directly log the `error` property instead of `errors`
+  console.error('Missing env variables', configProject.error)
   throw new Error('Các khai báo biến môi trường không hợp lệ')
 }
 
