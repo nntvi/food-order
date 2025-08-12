@@ -1,0 +1,11 @@
+{
+  "HomePage": {
+    "title": "Vi's Restaurant"
+  },
+  "SwitchLanguage": {
+    "title": "Switch Language",
+    "changeLanguage": "Change language (current: {locale})",
+    "en": "English",
+    "vi": "Vietnamese"
+  }
+}

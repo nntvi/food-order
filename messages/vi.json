@@ -1,0 +1,11 @@
+{
+  "HomePage": {
+    "title": "Bếp nhà Vi"
+  },
+  "SwitchLanguage": {
+    "title": "Chuyển ngôn ngữ",
+    "changeLanguage": "Đổi ngôn ngữ (hiện: {locale})",
+    "en": "Tiếng Anh",
+    "vi": "Tiếng Việt"
+  }
+}

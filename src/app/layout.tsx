@@ -5,6 +5,8 @@ import { cn } from '@/lib/utils'
 import { Toaster } from '@/components/ui/toaster'
 import { ThemeProvider } from '@/components/theme-provider'
 import AppProvider from '@/components/app-provider'
+import { NextIntlClientProvider } from 'next-intl'
+import { getLocale, getMessages } from 'next-intl/server'
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -15,20 +17,24 @@ export const metadata: Metadata = {
   description: 'The best restaurant in the world'
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const locale = await getLocale()
+  const messages = await getMessages()
   return (
-    <html lang='en' suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body className={cn('min-h-screen bg-background font-sans antialiased', fontSans.variable)}>
-        <AppProvider>
-          <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
-            {children}
-            <Toaster />
-          </ThemeProvider>
-        </AppProvider>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <AppProvider>
+            <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
+              {children}
+              <Toaster />
+            </ThemeProvider>
+          </AppProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   )
