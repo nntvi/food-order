@@ -1,8 +1,8 @@
 'use client'
 import { checkAndRefresh } from '@/lib/utils'
-import { usePathname, useRouter } from 'next/navigation'
 import { Suspense, useEffect } from 'react'
 import { useAppStore } from '@/components/app-provider'
+import { usePathname, useRouter } from '@/navigation'
 // Paths that do not require authentication
 const UNAUTHENTICATED_PATHS = ['/login', '/logout', '/refresh-token']
 
