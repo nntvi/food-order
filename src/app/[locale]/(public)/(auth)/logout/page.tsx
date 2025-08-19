@@ -2,7 +2,7 @@
 
 import { useAppStore } from '@/components/app-provider'
 import { getAccessTokenFromLocalStorage, getRefreshTokenFromLocalStorage } from '@/lib/utils'
-import { useRouter } from '@/navigation'
+import { useRouter } from '@/i18n/routing'
 import { useLogoutMutation } from '@/queries/useAuth'
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useRef } from 'react'

@@ -7,5 +7,23 @@
     "changeLanguage": "Change language (current: {locale})",
     "en": "English",
     "vi": "Vietnamese"
+  },
+  "Login": {
+    "title": "Login",
+    "description": "Enter your email and password to login to the system",
+    "emailLabel": "Email",
+    "emailPlaceholder": "m@example.com",
+    "passwordLabel": "Password",
+    "loginButton": "Login",
+    "loggingIn": "Logging in...",
+    "loginWithGoogle": "Login with Google"
+  },
+  "ErrorMessage": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email address",
+    "minLength": "Password must be at least 6 characters",
+    "maxLength": "Password cannot exceed 100 characters",
+    "invalidCredentials": "Invalid email or password",
+    "serverError": "An error occurred, please try again later"
   }
 }

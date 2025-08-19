@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { UpdateTableBody, UpdateTableBodyType } from '@/schemaValidations/table.schema'
 import { TableStatus, TableStatusValues } from '@/constants/type'
 import { Switch } from '@/components/ui/switch'
-import { Link } from '@/navigation'
+import { Link } from '@/i18n/routing'
 import { useGetTable, useUpdateTable } from '@/queries/useTable'
 import { useEffect } from 'react'
 import { toast } from '@/hooks/use-toast'

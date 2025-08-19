@@ -3,7 +3,7 @@
 import { useAppStore } from '@/components/app-provider'
 import { Role } from '@/constants/type'
 import { cn, handleErrorApi } from '@/lib/utils'
-import { Link, useRouter } from '@/navigation'
+import { Link, useRouter } from '@/i18n/routing'
 import { useLogoutMutation } from '@/queries/useAuth'
 import { RoleType } from '@/types/jwt.types'
 

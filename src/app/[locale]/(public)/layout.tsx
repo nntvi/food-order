@@ -1,23 +1,20 @@
-import { Menu, Package2 } from 'lucide-react'
+import NavItems from '@/app/[locale]/(public)/nav-items'
+import DarkModeToggle from '@/components/dark-mode-toggle'
+import SwitchLanguage from '@/components/switch-language'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-import DarkModeToggle from '@/components/dark-mode-toggle'
-import NavItems from '@/app/[locale]/(public)/nav-items'
-import { Link } from '@/navigation'
-import SwitchLanguage from '@/components/switch-language'
-import { setRequestLocale } from 'next-intl/server'
+import { Link } from '@/i18n/routing'
+import { Menu, Package2 } from 'lucide-react'
 
-export default async function Layout({
-  children,
-  modal,
-  params
-}: Readonly<{
-  children: React.ReactNode
-  modal: React.ReactNode
-  params: Promise<{ locale: string }>
-}>) {
-  const { locale } = await params
-  setRequestLocale(locale)
+export default async function Layout(
+  props: Readonly<{
+    children: React.ReactNode
+    params: Promise<{ locale: string }>
+    modal: React.ReactNode
+  }>
+) {
+  const { children, modal } = props
+
   return (
     <div className='flex min-h-screen w-full flex-col relative'>
       <header className='sticky z-20 top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6'>

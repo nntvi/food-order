@@ -2,7 +2,7 @@
 import { checkAndRefresh } from '@/lib/utils'
 import { Suspense, useEffect } from 'react'
 import { useAppStore } from '@/components/app-provider'
-import { usePathname, useRouter } from '@/navigation'
+import { usePathname, useRouter } from '@/i18n/routing'
 // Paths that do not require authentication
 const UNAUTHENTICATED_PATHS = ['/login', '/logout', '/refresh-token']
 

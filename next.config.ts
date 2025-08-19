@@ -1,5 +1,5 @@
 import type { NextConfig } from 'next'
-const createNextIntlPlugin = require('next-intl/plugin')
+import createNextIntlPlugin from 'next-intl/plugin'
 
 const withNextIntl = createNextIntlPlugin()
 const nextConfig: NextConfig = {
@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'via.placeholder.com',
+        pathname: '/**'
+      },
+      {
+        hostname: 'api-bigboy.duthanhduoc.com',
         pathname: '/**'
       }
     ]

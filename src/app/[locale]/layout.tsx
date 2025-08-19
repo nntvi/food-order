@@ -1,13 +1,14 @@
-import type { Metadata } from 'next'
-import { Inter as FontSans } from 'next/font/google'
-import './globals.css'
-import { cn } from '@/lib/utils'
-import { Toaster } from '@/components/ui/toaster'
-import { ThemeProvider } from '@/components/theme-provider'
 import AppProvider from '@/components/app-provider'
+import { ThemeProvider } from '@/components/theme-provider'
+import { Toaster } from '@/components/ui/toaster'
+import { routing } from '@/i18n/routing'
+import { cn } from '@/lib/utils'
+import type { Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
-import { getMessages } from 'next-intl/server'
-import { setRequestLocale } from 'next-intl/server'
+import { getMessages, setRequestLocale } from 'next-intl/server'
+import { Inter as FontSans } from 'next/font/google'
+import { notFound } from 'next/navigation'
+import './globals.css'
 const fontSans = FontSans({
   subsets: ['latin'],
   variable: '--font-sans'
@@ -16,21 +17,29 @@ export const metadata: Metadata = {
   title: '  Restaurant',
   description: 'The best restaurant in the world'
 }
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }))
+}
+export default async function RootLayout(
+  props: Readonly<{
+    children: React.ReactNode
+    params: Promise<{ locale: string }>
+  }>
+) {
+  const params = await props.params
+  const { locale } = params
+  const { children } = props
 
-export default async function RootLayout({
-  children,
-  params
-}: Readonly<{
-  children: React.ReactNode
-  params: Promise<{ locale: string }>
-}>) {
-  const { locale } = await params
-  setRequestLocale(locale)
+  if (!routing.locales.includes(locale as any)) {
+    notFound()
+  }
+  setRequestLocale(locale as any)
   const messages = await getMessages()
+
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={cn('min-h-screen bg-background font-sans antialiased', fontSans.variable)}>
-        <NextIntlClientProvider locale={locale} messages={messages}>
+        <NextIntlClientProvider locale={locale as any} messages={messages}>
           <AppProvider>
             <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
               {children}

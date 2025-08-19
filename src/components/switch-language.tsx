@@ -9,9 +9,8 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Locale, locales } from '@/config'
-import { usePathname, useRouter } from '@/navigation'
+import { usePathname, useRouter } from '@/i18n/routing'
 import { useLocale, useTranslations } from 'next-intl'
-import { useParams, useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 
 const FLAG_EMOJI: Record<string, string> = {
@@ -32,12 +31,8 @@ function SwitchLanguageMain() {
   const activeLocale = useLocale()
   const pathname = usePathname()
   const router = useRouter()
-  const params = useParams()
-  const searchParams = useSearchParams()
   const handleSelect = (locale: Locale) => {
-    const newPathname = pathname.replace(`/${activeLocale}`, `/${locale}`)
-    const fullUrl = `${newPathname}?${searchParams.toString()}`
-    router.replace(fullUrl)
+    router.replace(pathname, { locale })
     router.refresh()
   }
 

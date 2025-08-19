@@ -1,7 +1,7 @@
 'use client'
 
 import { checkAndRefresh, getRefreshTokenFromLocalStorage } from '@/lib/utils'
-import { useRouter } from '@/navigation'
+import { useRouter } from '@/i18n/routing'
 import { useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 

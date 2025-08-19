@@ -7,5 +7,23 @@
     "changeLanguage": "Đổi ngôn ngữ (hiện: {locale})",
     "en": "Tiếng Anh",
     "vi": "Tiếng Việt"
+  },
+  "Login": {
+    "title": "Đăng nhập",
+    "description": "Nhập email và mật khẩu của bạn để đăng nhập vào hệ thống",
+    "emailLabel": "Email",
+    "emailPlaceholder": "m@example.com",
+    "passwordLabel": "Mật khẩu",
+    "loginButton": "Đăng nhập",
+    "loggingIn": "Đang đăng nhập...",
+    "loginWithGoogle": "Đăng nhập bằng Google"
+  },
+  "ErrorMessage": {
+    "required": "Trường này là bắt buộc",
+    "invalidEmail": "Email không hợp lệ",
+    "minLength": "Mật khẩu phải có ít nhất 6 ký tự",
+    "maxLength": "Mật khẩu không được vượt quá 100 ký tự",
+    "invalidCredentials": "Email hoặc mật khẩu không đúng",
+    "serverError": "Đã xảy ra lỗi, vui lòng thử lại sau"
   }
 }

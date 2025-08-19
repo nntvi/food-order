@@ -8,17 +8,17 @@ const guestPaths = ['/vi/guest', '/en/guest']
 const onlyOwnerPaths = ['/vi/manage/accounts', '/en/manage/accounts']
 const privatePaths = [...managePaths, ...guestPaths]
 const unAuthPaths = ['/vi/login', '/en/login']
-import createIntlMiddleware from 'next-intl/middleware'
-import { locales, defaultLocale } from '@/config'
+import { defaultLocale } from '@/config'
+import createMiddleware from 'next-intl/middleware'
+import { routing } from '@/i18n/routing'
+
 export const decodeToken = (token: string) => {
   return jwt.decode(token) as TokenPayload
 }
+
 // vd:  pathname: /manage/dashboard
 export function middleware(req: NextRequest) {
-  const handleI18nRouting = createIntlMiddleware({
-    locales,
-    defaultLocale
-  })
+  const handleI18nRouting = createMiddleware(routing)
   const response = handleI18nRouting(req)
   const { pathname } = req.nextUrl
   const accessToken = req.cookies.get('accessToken')?.value
@@ -68,4 +68,6 @@ export function middleware(req: NextRequest) {
   return response
 }
 
-export const matcher = ['/((?!api|_next|.*\\..*).*)', '/(vi|en)/((?!_next|api|.*\\..*).*)']
+export const config = {
+  matcher: ['/', '/(vi|en)/:path*']
+}

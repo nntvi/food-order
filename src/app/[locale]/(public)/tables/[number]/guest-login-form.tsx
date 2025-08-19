@@ -12,7 +12,7 @@ import { useLoginGuestMutation } from '@/queries/useGuest'
 import { useAppStore } from '@/components/app-provider'
 import { generateSocketInstance, handleErrorApi } from '@/lib/utils'
 import { useParams, useSearchParams } from 'next/navigation'
-import { useRouter } from '@/navigation'
+import { useRouter } from '@/i18n/routing'
 
 export default function GuestLoginForm() {
   const searchParams = useSearchParams()

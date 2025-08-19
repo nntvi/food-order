@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
 import { Package2, PanelLeft } from 'lucide-react'
-import { Link, usePathname } from '@/navigation'
+import { Link, usePathname } from '@/i18n/routing'
 
 export default function MobileNavLinks() {
   const pathname = usePathname()

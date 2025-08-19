@@ -4,7 +4,7 @@ import { useAppStore } from '@/components/app-provider'
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip'
 import { cn, getRoleFromClient } from '@/lib/utils'
 import { Package2, Settings } from 'lucide-react'
-import { Link } from '@/navigation'
+import { Link } from '@/i18n/routing'
 import { usePathname } from 'next/navigation'
 
 export default function NavLinks() {

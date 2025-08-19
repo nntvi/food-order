@@ -11,10 +11,11 @@ import { generateSocketInstance, getAccessTokenFromLocalStorage, handleErrorApi 
 import { useLoginMutation } from '@/queries/useAuth'
 import { LoginBody, LoginBodyType } from '@/schemaValidations/auth.schema'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link, useRouter } from '@/navigation'
+import { Link, useRouter } from '@/i18n/routing'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { SearchParamsLoader, useSearchParamsLoader } from '@/components/search-params-loader'
+import { useTranslations } from 'next-intl'
 
 const getOauthGoogleUrl = () => {
   const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth'
@@ -34,18 +35,18 @@ const getOauthGoogleUrl = () => {
 const googleOauthUrl = getOauthGoogleUrl()
 
 export default function LoginForm() {
+  const t = useTranslations('Login')
+  const errorMessageT = useTranslations('ErrorMessage')
   const loginMutation = useLoginMutation()
   const { searchParams, setSearchParams } = useSearchParamsLoader()
   const clearTokens = searchParams?.get('clearTokens')
   const router = useRouter()
   const setRole = useAppStore((state) => state.setRole)
   const setSocket = useAppStore((state) => state.setSocket)
+
   const form = useForm<LoginBodyType>({
-    resolver: zodResolver(LoginBody),
-    defaultValues: {
-      email: '',
-      password: ''
-    }
+    resolver: zodResolver(LoginBody), // ✅ Để RHF nhận lỗi, không throw
+    defaultValues: { email: '', password: '' }
   })
 
   const onSubmit = async (data: LoginBodyType) => {
@@ -62,17 +63,19 @@ export default function LoginForm() {
       handleErrorApi({ error, setError: form.setError })
     }
   }
+
   useEffect(() => {
     if (clearTokens) {
       setRole(undefined)
     }
   }, [clearTokens, setRole])
+
   return (
     <Card className='mx-auto max-w-sm'>
       <SearchParamsLoader onParamReceived={setSearchParams} />
       <CardHeader>
-        <CardTitle className='text-2xl'>Đăng nhập</CardTitle>
-        <CardDescription>Nhập email và mật khẩu của bạn để đăng nhập vào hệ thống</CardDescription>
+        <CardTitle className='text-2xl'>{t('title')}</CardTitle>
+        <CardDescription>{t('description')}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -85,12 +88,14 @@ export default function LoginForm() {
               <FormField
                 control={form.control}
                 name='email'
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <FormItem>
                     <div className='grid gap-2'>
-                      <Label htmlFor='email'>Email</Label>
-                      <Input id='email' type='email' placeholder='m@example.com' required {...field} />
-                      <FormMessage />
+                      <Label htmlFor='email'>{t('emailLabel')}</Label>
+                      <Input id='email' type='email' placeholder={t('emailPlaceholder')} required {...field} />
+                      <FormMessage>
+                        {fieldState.error?.message && errorMessageT(fieldState.error.message as any)}
+                      </FormMessage>
                     </div>
                   </FormItem>
                 )}
@@ -98,24 +103,26 @@ export default function LoginForm() {
               <FormField
                 control={form.control}
                 name='password'
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <FormItem>
                     <div className='grid gap-2'>
                       <div className='flex items-center'>
-                        <Label htmlFor='password'>Password</Label>
+                        <Label htmlFor='password'>{t('passwordLabel')}</Label>
                       </div>
                       <Input id='password' type='password' required {...field} />
-                      <FormMessage />
+                      <FormMessage>
+                        {fieldState.error?.message && errorMessageT(fieldState.error.message as any)}
+                      </FormMessage>
                     </div>
                   </FormItem>
                 )}
               />
-              <Button type='submit' className='w-full'>
-                Đăng nhập
+              <Button type='submit' className='w-full' disabled={loginMutation.isPending}>
+                {loginMutation.isPending ? t('loggingIn') : t('loginButton')}
               </Button>
               <Link href={googleOauthUrl}>
                 <Button variant='outline' className='w-full' type='button'>
-                  Đăng nhập bằng Google
+                  {t('loginWithGoogle')}
                 </Button>
               </Link>
             </div>
