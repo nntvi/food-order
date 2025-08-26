@@ -5,18 +5,25 @@ import { routing } from '@/i18n/routing'
 import { cn } from '@/lib/utils'
 import type { Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
-import { getMessages, setRequestLocale } from 'next-intl/server'
+import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server'
 import { Inter as FontSans } from 'next/font/google'
 import { notFound } from 'next/navigation'
 import './globals.css'
+import { Locale } from '@/config'
 const fontSans = FontSans({
   subsets: ['latin'],
   variable: '--font-sans'
 })
-export const metadata: Metadata = {
-  title: '  Restaurant',
-  description: 'The best restaurant in the world'
+// export const metadata: Metadata = {
+//   title: '  Restaurant',
+//   description: 'The best restaurant in the world'
+// }
+
+export async function generateMetadata() {
+  const t = await getTranslations('HomePage')
+  return { title: t('title') }
 }
+
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }))
 }

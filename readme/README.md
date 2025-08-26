@@ -1015,3 +1015,30 @@ Trong trường hợp không active thì slot sẽ render file `default.tsx` tro
 Khai báo tên folder theo `(.) (....), (...)`
 `...` là dựa vào route segment chứ ko dựa vào folder path
 Khai báo intercepting route ở đâu thì những page ở level đó và con của nó sẽ bị chặn
+
+### SEO
+
+- SEO là viết tắt của Search Engine Optimization => tối ưu hoá công cụ tìm kiếm
+- Mục tiêu là giúp website đặt thứ hạng cao khi user dùng các từ khoá search trên gg, bing...
+- SEO ko tồn tại ở dạng website, nó có thể là SEO Video Youtube, SEO App trên gg play
+- SEO chia làm 2 loại
+  - SEO Onpage: Tối ưu cấu trúc web (SSR, link thông minh, meta, title, h1, h2, h2, ảnh, video)
+  - SEO Offpage: BackLink, Traffic, ...
+
+SEO là 1 ngành nghề riêng biệt, dev web thì vẫn nên biết về SEO để lựa chọn công nghệ, ko cần quá chuyên sâu SEO
+
+- Web quản lý ko cần SEO
+- SEO onpage mà content tệ thì cũng ko lên được TOP
+- SEO là free, nhưng lên được TOP thì rất nhiều công sức, time, và tiền bạc => ko dành cho nhà nghèo =)))
+- Việc bạn có lên TOP ko ko chỉ phụ thuộc vào web bạn, còn phụ thuộc vào chính sách Google và sự cạnh tranh của từ khoá đó
+- Client side rendering SEO ko tốt, những trang cần SEO thì nên là Server side rendering
+- NextJs PR tốt cho SEO, nhưng thật sự chỉ là cải thiện SEO của React thoi. Chứ so với việc dùng Multiple page truyền thông thì thật sự NextJs kém hơn. Lý do chủ yếu nằm ở việc hạn chế kĩ thuật trong framework Next.js và tốc độ load trang chậm, JS bundle lớn.
+- Đừng tin vào điểm SEO Google Lighthouse => nó ko mạnh về SEO
+
+### Note về SEO
+
+1. Những page cần login vào mới xem được như /manage, gọi món, profile, ... thì không cần SEO: Tức là ko cần SSR và no index meta. Nhưng vẫn nên có thẻ title, meta description
+
+2. Page 'use client' thì ko thêm meta được, vậy nên phải để page là server side render
+
+3. Canonical link nhớ thêm `/en` hay `/vi` vào
