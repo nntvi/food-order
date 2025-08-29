@@ -1,7 +1,60 @@
 {
   "HomePage": {
-    "title": "Bếp nhà Vi"
+    "title": "Bếp nhà Vi",
+    "description": "Nhà hàng tốt nhất",
+    "heroDescription": "Khám phá hương vị ẩm thực Việt Nam đích thực với những món ăn được chế biến từ nguyên liệu tươi ngon nhất",
+    "seeMenu": "Xem thực đơn",
+    "aboutUs": "Về chúng tôi",
+    "features": {
+      "quality": {
+        "title": "Chất lượng cao",
+        "desc": "Nguyên liệu tươi ngon, chế biến cẩn thận"
+      },
+      "fast": {
+        "title": "Phục vụ nhanh",
+        "desc": "Đảm bảo thời gian chờ tối thiểu"
+      },
+      "friendly": {
+        "title": "Thân thiện",
+        "desc": "Đội ngũ nhân viên nhiệt tình, chu đáo"
+      }
+    },
+    "menuSection": {
+      "title": "Thực đơn nổi bật",
+      "subtitle": "Khám phá những món ăn được yêu thích nhất của chúng tôi, được chế biến từ công thức gia truyền",
+      "emptyTitle": "Chưa có món ăn",
+      "emptyDesc": "Vui lòng quay lại sau",
+      "seeAll": "Xem tất cả món ăn"
+    },
+    "error": {
+      "title": "Đã xảy ra lỗi",
+      "message": "Vui lòng thử lại sau"
+    },
+    "cta": {
+      "title": "Sẵn sàng thưởng thức?",
+      "desc": "Đặt bàn ngay hôm nay để trải nghiệm hương vị ẩm thực Việt Nam đích thực",
+      "bookNow": "Đặt bàn ngay"
+    }
   },
+
+  "DishDetail": {
+    "notFound": "Món ăn không tồn tại",
+    "title": "Chi tiết món ăn",
+    "price": "Giá",
+    "description": "Mô tả",
+    "status": "Trạng thái",
+    "statusMap": {
+      "Available": "Đang bán",
+      "Unavailable": "Tạm ngừng",
+      "Hidden": "Ẩn"
+    },
+    "backToMenu": "Quay lại thực đơn",
+    "orderNow": "Đặt món ngay",
+    "share": "Chia sẻ",
+    "copied": "Đã sao chép liên kết",
+    "lastUpdated": "Cập nhật lần cuối {date}"
+  },
+
   "SwitchLanguage": {
     "title": "Chuyển ngôn ngữ",
     "changeLanguage": "Đổi ngôn ngữ (hiện: {locale})",

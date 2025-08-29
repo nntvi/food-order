@@ -9,15 +9,11 @@ import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server
 import { Inter as FontSans } from 'next/font/google'
 import { notFound } from 'next/navigation'
 import './globals.css'
-import { Locale } from '@/config'
+import NextTopLoader from 'nextjs-toploader'
 const fontSans = FontSans({
   subsets: ['latin'],
   variable: '--font-sans'
 })
-// export const metadata: Metadata = {
-//   title: '  Restaurant',
-//   description: 'The best restaurant in the world'
-// }
 
 export async function generateMetadata() {
   const t = await getTranslations('HomePage')
@@ -46,6 +42,7 @@ export default async function RootLayout(
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={cn('min-h-screen bg-background font-sans antialiased', fontSans.variable)}>
+        <NextTopLoader showSpinner={false} height={3} color='hsl(var(--muted-foreground))' />
         <NextIntlClientProvider locale={locale as any} messages={messages}>
           <AppProvider>
             <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>

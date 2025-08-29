@@ -1,5 +1,6 @@
 import { formatCurrency } from '@/lib/utils'
 import { DishResType } from '@/schemaValidations/dish.schema'
+import Image from 'next/image'
 
 export default async function DishDetail({ dish }: { dish: DishResType['data'] | undefined }) {
   if (!dish) {
@@ -16,9 +17,16 @@ export default async function DishDetail({ dish }: { dish: DishResType['data'] |
   return (
     <div className='flex flex-col md:flex-row h-full'>
       {/* Image Section */}
-      <div className='md:w-1/2 h-64 md:h-auto'>
+      <div className='md:w-1/2 h-64 md:h-[400px] relative'>
         {dish.image ? (
-          <img src={dish.image} alt={dish.name} className='w-full h-full object-cover' />
+          <Image
+            src={dish.image}
+            alt={dish.name}
+            width={600}
+            height={400}
+            className='w-full h-auto object-cover'
+            title={dish.name}
+          />
         ) : (
           <div className='w-full h-full bg-muted flex items-center justify-center'>
             <div className='text-muted-foreground text-center'>
@@ -37,7 +45,7 @@ export default async function DishDetail({ dish }: { dish: DishResType['data'] |
 
           {/* Price */}
           <div className='flex items-center gap-2'>
-            <span className='text-3xl font-bold text-primary'>${formatCurrency(dish.price)}</span>
+            <span className='text-3xl font-bold text-primary'>{formatCurrency(dish.price)}</span>
             <span className='text-sm text-muted-foreground'>/ phần</span>
           </div>
 

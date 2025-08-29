@@ -16,6 +16,7 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { SearchParamsLoader, useSearchParamsLoader } from '@/components/search-params-loader'
 import { useTranslations } from 'next-intl'
+import { LoaderCircle } from 'lucide-react'
 
 const getOauthGoogleUrl = () => {
   const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth'
@@ -118,6 +119,7 @@ export default function LoginForm() {
                 )}
               />
               <Button type='submit' className='w-full' disabled={loginMutation.isPending}>
+                {loginMutation.isPending && <LoaderCircle className='mr-2 h-4 w-4 animate-spin' />}
                 {loginMutation.isPending ? t('loggingIn') : t('loginButton')}
               </Button>
               <Link href={googleOauthUrl}>
