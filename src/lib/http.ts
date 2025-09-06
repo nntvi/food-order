@@ -7,7 +7,7 @@ import {
 } from '@/lib/utils'
 import { LoginResType } from '@/schemaValidations/auth.schema'
 import { redirect } from 'next/navigation'
-
+import Cookies from 'js-cookie'
 type CustomOptions = Omit<RequestInit, 'method'> & {
   baseUrl?: string | undefined
 }
@@ -101,6 +101,7 @@ const request = async <Response>(
       )
     } else if (response.status === AUTHENTICATION_ERROR_STATUS) {
       if (isClient) {
+        const locale = Cookies.get('NEXT_LOCALE')
         if (!clientLogoutRequest) {
           clientLogoutRequest = fetch('/api/auth/logout', {
             method: 'POST',
@@ -118,7 +119,7 @@ const request = async <Response>(
             // Redirect về login có thể dẫn đến loop vô hạn nếu không đc xử lý đúng cách
             // Vì nếu rơi vào case ở trang login, có gọi api cần accessToken
             // Mà accessToken đã bị xoá => lại nhảy vào đây => lại redirect => ...
-            location.href = '/login'
+            location.href = `/${locale}/login`
           }
         }
       } else {

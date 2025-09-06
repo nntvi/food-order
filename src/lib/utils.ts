@@ -10,7 +10,8 @@ import { BookX, CookingPot, HandCoins, Loader, Truck } from 'lucide-react'
 import { UseFormSetError } from 'react-hook-form'
 import { io } from 'socket.io-client'
 import { twMerge } from 'tailwind-merge'
-
+import slugify from 'slugify'
+import { convert } from 'html-to-text'
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
@@ -205,4 +206,20 @@ export const wrapServerApi = async <T>(fn: () => Promise<T>) => {
     }
   }
   return result
+}
+
+export const generateSlugUrl = ({ name, id }: { name: string; id: number }) => {
+  return `${slugify(name)}-i.${id}`
+}
+
+export const getIdFromSlugUrl = (slugUrl: string) => {
+  return Number(slugUrl.split('-i.')[1])
+}
+
+export const htmlToTextForDescription = (html: string) => {
+  return convert(html, {
+    limits: {
+      maxInputLength: 140
+    }
+  })
 }

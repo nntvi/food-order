@@ -1,0 +1,68 @@
+import AppProvider from '@/components/app-provider'
+import { ThemeProvider } from '@/components/theme-provider'
+import { Toaster } from '@/components/ui/toaster'
+import { routing } from '@/i18n/routing'
+import { cn } from '@/lib/utils'
+import type { Metadata } from 'next'
+import { NextIntlClientProvider } from 'next-intl'
+import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server'
+import { Inter as FontSans } from 'next/font/google'
+import { notFound } from 'next/navigation'
+import './globals.css'
+import NextTopLoader from 'nextjs-toploader'
+import Footer from '@/components/footer'
+import { baseOpenGraph } from '@/shared-metadata'
+const fontSans = FontSans({
+  subsets: ['latin'],
+  variable: '--font-sans'
+})
+
+export async function generateMetadata() {
+  const t = await getTranslations('HomePage')
+  return {
+    title: {
+      default: t('title'),
+      template: `%s | ${t('title')}`
+    },
+    openGraph: {
+      ...baseOpenGraph
+    }
+  }
+}
+
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }))
+}
+export default async function RootLayout(
+  props: Readonly<{
+    children: React.ReactNode
+    params: Promise<{ locale: string }>
+  }>
+) {
+  const params = await props.params
+  const { locale } = params
+  const { children } = props
+
+  if (!routing.locales.includes(locale as any)) {
+    notFound()
+  }
+  setRequestLocale(locale as any)
+  const messages = await getMessages()
+
+  return (
+    <html lang={locale} suppressHydrationWarning>
+      <body className={cn('min-h-screen bg-background font-sans antialiased', fontSans.variable)}>
+        <NextTopLoader showSpinner={false} height={3} color='hsl(var(--muted-foreground))' />
+        <NextIntlClientProvider locale={locale as any} messages={messages}>
+          <AppProvider>
+            <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
+              {children}
+              <Footer />
+              <Toaster />
+            </ThemeProvider>
+          </AppProvider>
+        </NextIntlClientProvider>
+      </body>
+    </html>
+  )
+}

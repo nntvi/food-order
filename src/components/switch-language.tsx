@@ -3,15 +3,15 @@
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel
+  DropdownMenuLabel,
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Locale, locales } from '@/config'
-import { setUserLocale } from '@/services/locale'
-import { useTranslations, useLocale } from 'next-intl'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter } from '@/i18n/routing'
+import { useLocale, useTranslations } from 'next-intl'
+import { Suspense } from 'react'
 
 const FLAG_EMOJI: Record<string, string> = {
   vi: '🇻🇳',
@@ -19,17 +19,21 @@ const FLAG_EMOJI: Record<string, string> = {
   // thêm các locale khác nếu có, ví dụ:
   // ja: '🇯🇵', fr: '🇫🇷'
 }
-
-export function SwitchLanguage() {
+export default function SwitchLanguage() {
+  return (
+    <Suspense>
+      <SwitchLanguageMain />
+    </Suspense>
+  )
+}
+function SwitchLanguageMain() {
   const t = useTranslations('SwitchLanguage')
   const activeLocale = useLocale()
   const pathname = usePathname()
   const router = useRouter()
-
   const handleSelect = (locale: Locale) => {
-    setUserLocale(locale)
-    // if (locale === activeLocale) return
-    // router.replace(pathname, { locale })
+    router.replace(pathname, { locale })
+    router.refresh()
   }
 
   const currentFlag = FLAG_EMOJI[activeLocale] ?? '🌐'

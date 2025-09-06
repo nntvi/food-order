@@ -1,6 +1,6 @@
 import { Role } from '@/constants/type'
 import { LoginRes } from '@/schemaValidations/auth.schema'
-import z from 'zod'
+import { z } from 'zod'
 
 export const AccountSchema = z.object({
   id: z.number(),
@@ -51,32 +51,21 @@ export type CreateEmployeeAccountBodyType = z.TypeOf<typeof CreateEmployeeAccoun
 
 export const UpdateEmployeeAccountBody = z
   .object({
-    name: z.string().trim().min(2).max(256),
-    email: z.string().email(),
-    avatar: z.string().url().optional(),
+    name: z.string().min(1, 'Tên là bắt buộc'),
+    email: z.string().email('Email không hợp lệ'),
+    role: z.enum(['Owner', 'Employee']),
+    avatar: z.string().optional(),
     changePassword: z.boolean().optional(),
-    password: z.string().min(6).max(100).optional(),
-    confirmPassword: z.string().min(6).max(100).optional(),
-    role: z.enum([Role.Owner, Role.Employee]).optional().default(Role.Employee)
+    password: z.string().optional(),
+    confirmPassword: z.string().optional()
   })
-  .strict()
-  .superRefine(({ confirmPassword, password, changePassword }, ctx) => {
-    if (changePassword) {
-      if (!password || !confirmPassword) {
-        ctx.addIssue({
-          code: 'custom',
-          message: 'Hãy nhập mật khẩu mới và xác nhận mật khẩu mới',
-          path: ['changePassword']
-        })
-      } else if (confirmPassword !== password) {
-        ctx.addIssue({
-          code: 'custom',
-          message: 'Mật khẩu không khớp',
-          path: ['confirmPassword']
-        })
-      }
+  .refine(
+    (data) => !data.changePassword || (data.password && data.confirmPassword && data.password === data.confirmPassword),
+    {
+      message: 'Mật khẩu và xác nhận mật khẩu phải khớp',
+      path: ['confirmPassword']
     }
-  })
+  )
 
 export type UpdateEmployeeAccountBodyType = z.TypeOf<typeof UpdateEmployeeAccountBody>
 

@@ -1,11 +1,81 @@
 {
   "HomePage": {
-    "title": "Vi's Restaurant"
+    "title": "Vi's Restaurant",
+    "description": "The best restaurant",
+    "heroDescription": "Discover authentic Vietnamese flavors crafted from the freshest ingredients",
+    "seeMenu": "See Menu",
+    "aboutUs": "About Us",
+    "features": {
+      "quality": {
+        "title": "High Quality",
+        "desc": "Fresh ingredients, carefully prepared"
+      },
+      "fast": {
+        "title": "Fast Service",
+        "desc": "Minimized waiting time guaranteed"
+      },
+      "friendly": {
+        "title": "Friendly",
+        "desc": "Helpful and attentive staff"
+      }
+    },
+    "menuSection": {
+      "title": "Featured Menu",
+      "subtitle": "Explore our most-loved dishes, made with family recipes",
+      "emptyTitle": "No dishes yet",
+      "emptyDesc": "Please check back later",
+      "seeAll": "View all dishes"
+    },
+    "error": {
+      "title": "An error occurred",
+      "message": "Please try again later"
+    },
+    "cta": {
+      "title": "Ready to dine?",
+      "desc": "Book a table today to enjoy authentic Vietnamese cuisine",
+      "bookNow": "Book now"
+    }
   },
+  "DishDetail": {
+    "notFound": "Dish not found",
+    "title": "Dish Details",
+    "price": "Price",
+    "description": "Description",
+    "status": "Status",
+    "statusMap": {
+      "Available": "Available",
+      "Unavailable": "Unavailable",
+      "Hidden": "Hidden"
+    },
+    "backToMenu": "Back to menu",
+    "orderNow": "Order now",
+    "share": "Share",
+    "copied": "Link copied",
+    "lastUpdated": "Last updated {date}"
+  },
+
   "SwitchLanguage": {
     "title": "Switch Language",
     "changeLanguage": "Change language (current: {locale})",
     "en": "English",
     "vi": "Vietnamese"
+  },
+  "Login": {
+    "title": "Login",
+    "description": "Enter your email and password to login to the system",
+    "emailLabel": "Email",
+    "emailPlaceholder": "m@example.com",
+    "passwordLabel": "Password",
+    "loginButton": "Login",
+    "loggingIn": "Logging in...",
+    "loginWithGoogle": "Login with Google"
+  },
+  "ErrorMessage": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email address",
+    "minLength": "Password must be at least 6 characters",
+    "maxLength": "Password cannot exceed 100 characters",
+    "invalidCredentials": "Invalid email or password",
+    "serverError": "An error occurred, please try again later"
   }
 }
