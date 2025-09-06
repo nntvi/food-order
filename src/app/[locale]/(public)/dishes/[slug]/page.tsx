@@ -5,6 +5,7 @@ import envConfig, { Locale } from '@/config'
 import { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 import { cache } from 'react'
+import { baseOpenGraph } from '@/shared-metadata'
 // banh-my-i.123
 type Params = { slug: string; locale: Locale }
 type Props = {
@@ -52,7 +53,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     title: dish.name,
     description: htmlToTextForDescription(dish.description),
     openGraph: {
-      // ...(baseOpenGraph ?? {}), // nếu bạn có
+      ...baseOpenGraph,
       title: dish.name,
       description: htmlToTextForDescription(dish.description),
       url: pageUrl,

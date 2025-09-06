@@ -10,6 +10,8 @@ import { Inter as FontSans } from 'next/font/google'
 import { notFound } from 'next/navigation'
 import './globals.css'
 import NextTopLoader from 'nextjs-toploader'
+import Footer from '@/components/footer'
+import { baseOpenGraph } from '@/shared-metadata'
 const fontSans = FontSans({
   subsets: ['latin'],
   variable: '--font-sans'
@@ -17,7 +19,15 @@ const fontSans = FontSans({
 
 export async function generateMetadata() {
   const t = await getTranslations('HomePage')
-  return { title: t('title') }
+  return {
+    title: {
+      default: t('title'),
+      template: `%s | ${t('title')}`
+    },
+    openGraph: {
+      ...baseOpenGraph
+    }
+  }
 }
 
 export function generateStaticParams() {
@@ -47,6 +57,7 @@ export default async function RootLayout(
           <AppProvider>
             <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
               {children}
+              <Footer />
               <Toaster />
             </ThemeProvider>
           </AppProvider>

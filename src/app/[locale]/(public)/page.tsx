@@ -48,7 +48,7 @@ export default async function Home({ params }: { params: Promise<{ locale: Local
         {/* Background Image with Overlay */}
         <div className='absolute inset-0'>
           <Image
-            src='/banner.png'
+            src='/banner.jpg'
             fill
             quality={100}
             alt='Restaurant Banner'
